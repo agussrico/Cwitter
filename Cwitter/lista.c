@@ -7,10 +7,7 @@ void listaInicializar(tLista *lista){
 }
 
 int listaVacia(tLista *lista){
-    if(!lista->inicio && !lista->fin){
-        return LISTA_VACIA;
-    }
-    return TODO_OK;
+    return lista->cant == 0;
 }
 
 int listaLlena(tLista *lista, size_t dataSize){
@@ -60,7 +57,7 @@ int listaInsertar(tLista *lista, void *data, size_t dataSize){
     return TODO_OK;
 }
 
-int listaBuscarYAccion(tLista *lista, void *busqueda, int (*cmp(void *, void*)), void (*accion(void *))){
+int listaBuscarYAccion(tLista *lista, void *busqueda, int (*cmp)(void *, void*), void (*accion)(void *)){
     ///Busca todos los nodos que cumplan con cmp y ejecuta accion en la data de cada uno
     int cont = 0;
     tNodo *nodoActual = lista->inicio;
@@ -74,7 +71,7 @@ int listaBuscarYAccion(tLista *lista, void *busqueda, int (*cmp(void *, void*)),
     return cont; ///devuelve la cantidad de nodos accionados
 }
 
-tNodo *listaBuscarYDevolver(tLista *lista, void *busqueda, int (*cmp(void *, void*))){
+tNodo *listaBuscarYDevolver(tLista *lista, void *busqueda, int (*cmp)(void *, void*)){
     ///devuelve el puntero al primer nodo que cumple con cmp encontrado
     tNodo *nodoActual = lista->inicio;
     while(nodoActual != NULL){
@@ -86,7 +83,7 @@ tNodo *listaBuscarYDevolver(tLista *lista, void *busqueda, int (*cmp(void *, voi
     return NULL; ///si no encuentra retorna NULL
 }
 
-void listaRecorrerYAccion(tLista *lista, void (*accion(void *))){
+void listaRecorrerYAccion(tLista *lista, void (*accion)(void *)){
     ///Ejecuta una accion en todos los nodos de la lista
     tNodo *nodoActual = lista->inicio;
     while(nodoActual != NULL){
@@ -95,16 +92,28 @@ void listaRecorrerYAccion(tLista *lista, void (*accion(void *))){
     }
 }
 
-int listaEliminarNodo(tLista *lista, void *busqueda, int (*cmp(void *, void*))){
+int listaEliminarNodo(tLista *lista, void *busqueda, int (*cmp)(void *, void*)){
     tNodo *nodoAEliminar = listaBuscarYDevolver(lista, busqueda, cmp);
     if(!nodoAEliminar){
         return NODO_NO_ENCONTRADO;
     }
-    nodoAEliminar->ant->sig = nodoAEliminar->sig;
-    nodoAEliminar->sig->ant = nodoAEliminar->ant;
+
+    if(nodoAEliminar->ant){
+        nodoAEliminar->ant->sig = nodoAEliminar->sig;
+    } else {
+        lista->inicio = nodoAEliminar->sig;
+    }
+
+    if(nodoAEliminar->sig){
+        nodoAEliminar->sig->ant = nodoAEliminar->ant;
+    } else {
+        lista->fin = nodoAEliminar->ant;
+    }
+
     free(nodoAEliminar->data);
     free(nodoAEliminar);
     lista->cant--;
+
     return TODO_OK;
 }
 
