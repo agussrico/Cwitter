@@ -1,13 +1,21 @@
 # depslib dependency file v1.0
-1788909824 source:c:\users\fran0\documents\github2\cwitter\cwitter\main.c
+1789142768 source:c:\users\fran0\documents\github2\cwitter\cwitter\main.c
 	<stdio.h>
 	<stdlib.h>
+	"lista.h"
+	"user.h"
 
-1788912487 source:c:\users\fran0\documents\github2\cwitter\cwitter\lista.c
+1789146109 source:c:\users\fran0\documents\github2\cwitter\cwitter\lista.c
 	"lista.h"
 
-1788912710 c:\users\fran0\documents\github2\cwitter\cwitter\lista.h
+1789146103 c:\users\fran0\documents\github2\cwitter\cwitter\lista.h
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
+
+1789141400 c:\users\fran0\documents\github2\cwitter\cwitter\user.h
+	"lista.h"
+
+1789145819 source:c:\users\fran0\documents\github2\cwitter\cwitter\user.c
+	"user.h"
 

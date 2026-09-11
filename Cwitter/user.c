@@ -42,8 +42,8 @@ int usersGuardar(tLista* lista)
     f = fopen(ARCH_USERS,"wb");
     if(!f)
         return ERROR_AP_ARCH;
-    
-    listaRecorrerYAccion(lista,userEscribirArch); 
+
+    listaRecorrerYAccion(lista, userEscribirArch);
 
     fclose(f);
     f = NULL;
@@ -56,9 +56,10 @@ int userRegistrar(tLista* lista, char* user, char* pass)
     strcpy(u.pass,pass);
     strcpy(u.user,user);
 
-    if(!listaBuscarYDevolver(lista,&u,cmpUser))
+    if(!listaBuscarYDevolver(lista,&u,cmpUser)){
+        printf("a");
         return listaInsertar(lista,&u,sizeof(User));
-    
+    }
     return USER_DUPLICADO;
 }
 

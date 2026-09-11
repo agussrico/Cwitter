@@ -26,10 +26,11 @@ void listaInicializar(tLista *lista);
 int listaVacia(tLista *lista);
 int listaLlena(tLista *lista, size_t dataSize);
 int listaInsertar(tLista *lista, void *data, size_t dataSize);
-int listaBuscarYAccion(tLista *lista, void *busqueda, int (*cmp(void *, void*)), void (*accion(void *)));
-tNodo *listaBuscarYDevolver(tLista *lista, void *busqueda, int (*cmp(void *, void*)));
-int listaEliminarNodo(tLista *lista, void *busqueda, int (*cmp(void *, void*)));
+int listaBuscarYAccion(tLista *lista, void *busqueda, int (*cmp)(void *, void*), void (*accion)(void *));
+tNodo *listaBuscarYDevolver(tLista *lista, void *busqueda, int (*cmp)(void *, void*));
+int listaEliminarNodo(tLista *lista, void *busqueda, int (*cmp)(void *, void*));
 void listaVaciar(tLista *lista);
+void listaRecorrerYAccion(tLista *lista, void (*accion)(void *));
 
 
 #endif // LISTA_H_INCLUDED
