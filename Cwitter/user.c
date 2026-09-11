@@ -57,7 +57,6 @@ int userRegistrar(tLista* lista, char* user, char* pass)
     strcpy(u.user,user);
 
     if(!listaBuscarYDevolver(lista,&u,cmpUser)){
-        printf("a");
         return listaInsertar(lista,&u,sizeof(User));
     }
     return USER_DUPLICADO;

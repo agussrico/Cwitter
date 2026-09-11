@@ -10,6 +10,7 @@ int main()
     int opcion;
     char user[20], pass[20];
     tLista listaUsuarios;
+    listaInicializar(&listaUsuarios);
     usersAbrir(&listaUsuarios);
     ///logica de inicio de sesion
     while(1){
