@@ -7,10 +7,7 @@ void listaInicializar(tLista *lista){
 }
 
 int listaVacia(tLista *lista){
-    if(!lista->inicio && !lista->fin){
-        return LISTA_VACIA;
-    }
-    return TODO_OK;
+    return lista->cant == 0;
 }
 
 int listaLlena(tLista *lista, size_t dataSize){
@@ -100,11 +97,23 @@ int listaEliminarNodo(tLista *lista, void *busqueda, int (*cmp)(void *, void*)){
     if(!nodoAEliminar){
         return NODO_NO_ENCONTRADO;
     }
-    nodoAEliminar->ant->sig = nodoAEliminar->sig;
-    nodoAEliminar->sig->ant = nodoAEliminar->ant;
+
+    if(nodoAEliminar->ant){
+        nodoAEliminar->ant->sig = nodoAEliminar->sig;
+    } else {
+        lista->inicio = nodoAEliminar->sig;
+    }
+
+    if(nodoAEliminar->sig){
+        nodoAEliminar->sig->ant = nodoAEliminar->ant;
+    } else {
+        lista->fin = nodoAEliminar->ant;
+    }
+
     free(nodoAEliminar->data);
     free(nodoAEliminar);
     lista->cant--;
+
     return TODO_OK;
 }
 
