@@ -3,6 +3,41 @@
 #include "lista.h"
 #include "user.h"
 
+void mostrarBanner()
+{
+    printf("=====================================================\n");
+    printf("   ____ _____                           \n");
+    printf("  / ___|_   _|_      _ (_)|_| |_ ___ _ __\n");
+    printf(" | |     | | \\ \\ /\\ / /| | __| __/ _ \\ '__|\n");
+    printf(" | |___  | |  \\ V  V / | | |_| ||  __/ |\n");
+    printf("  \\____| |_|   \\_/\\_/  |_|\\__|\\__\\___|_|\n");
+    printf("=====================================================\n");
+}
+
+void mostrarMenuPrincipal()
+{
+    printf("\n");
+    printf("  +-----------------------------------------+\n");
+    printf("  |            BIENVENIDO A CTWITTER         |\n");
+    printf("  +-----------------------------------------+\n");
+    printf("  |  1. Iniciar Sesion                       |\n");
+    printf("  |  2. Registrarse                          |\n");
+    printf("  +-----------------------------------------+\n");
+    printf("  >> Elegi una opcion: ");
+}
+
+void mostrarEncabezado(const char *titulo)
+{
+    int len = strlen(titulo);
+    printf("\n  +");
+    for(int i = 0; i < len + 2; i++) printf("-");
+    printf("+\n");
+    printf("  | %s |\n", titulo);
+    printf("  +");
+    for(int i = 0; i < len + 2; i++) printf("-");
+    printf("+\n\n");
+}
+
 int main()
 {
     User *pUsuarioActual = NULL;
@@ -16,32 +51,47 @@ int main()
     while(1){
         ///bucle menu
         while(pUsuarioActual == NULL){
-            printf("Bienvenido a CTwitter:\n1.Iniciar Sesion\n2.Registrarse");
+            system("cls");
+            mostrarBanner();
+            mostrarMenuPrincipal();
             scanf("%d", &opcion);
             if(opcion == 1){
-                printf("Ingrese su usuario: ");
-                scanf("%s", user);
-                printf("Ingrese su psw: ");
-                scanf("%s", pass);
+                system("cls");
+                mostrarBanner();
+                mostrarEncabezado("INICIAR SESION");
+                printf("  Usuario: ");
+                scanf("%19s", user);
+                printf("  Password: ");
+                scanf("%19s", pass);
                 pUsuarioActual = userIniciarSesion(&listaUsuarios, user, pass);
                 if(pUsuarioActual == NULL){
-                    printf("Error al iniciar sesion\n");
+                    printf("\n  [!] Error al iniciar sesion\n");
+                    printf("  Presione ENTER para continuar...");
+                    getchar(); getchar();
                 }
             }
             else if(opcion == 2){
-                printf("Registro de nuevo usuario: \n");
-                printf("Ingrese su usuario: ");
-                scanf("%s", user);
-                printf("Ingrese su psw: ");
-                scanf("%s", pass);
+                system("cls");
+                mostrarBanner();
+                mostrarEncabezado("REGISTRO DE NUEVO USUARIO");
+                printf("  Usuario: ");
+                scanf("%19s", user);
+                printf("  Password: ");
+                scanf("%19s", pass);
                 userRegistrar(&listaUsuarios, user, pass);
                 ///faltaria control de errores usuario duplicado/no se pudo cargar.
+                printf("\n  Presione ENTER para continuar...");
+                getchar(); getchar();
             }
             else{
-                printf("Opcion no valida");
+                printf("\n  [!] Opcion no valida\n");
+                printf("  Presione ENTER para continuar...");
+                getchar(); getchar();
             }
         }
-        printf("Sesion iniciada\n");
+        system("cls");
+        mostrarBanner();
+        printf("\n  >> Sesion iniciada. Bienvenido, %s! <<\n\n", pUsuarioActual->user);
         break; ///aca iria el menu principal de twitter con el usuario iniciado
     }
     ///guardo la lista de usuarios en el archivo para persistencia
