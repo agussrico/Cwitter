@@ -49,3 +49,33 @@
 	"user.h"
 	"tweet.h"
 
+1789481014 source:c:\fran\cwitter\cwitter\lista.c
+	"lista.h"
+
+1789481014 c:\fran\cwitter\cwitter\lista.h
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+
+1789481644 source:c:\fran\cwitter\cwitter\main.c
+	<stdio.h>
+	<stdlib.h>
+	"lista.h"
+	"user.h"
+	"tweet.h"
+
+1789481014 c:\fran\cwitter\cwitter\user.h
+	"lista.h"
+
+1789481644 c:\fran\cwitter\cwitter\tweet.h
+	"lista.h"
+
+1789481014 source:c:\fran\cwitter\cwitter\user.c
+	"user.h"
+
+1789484726 source:c:\fran\cwitter\cwitter\tweet.c
+	"tweet.h"
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+

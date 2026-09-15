@@ -133,7 +133,7 @@ void tweetBuscarYMostrar(tLista *feed, char *textoBuscado) {
     int encontrados = 0;
 
     while (actual != NULL) {
-        if (cmpTweetTexto(actual->data, textoBuscado) == 0) {
+        if (cmpTweetTexto(actual->data, textoBuscado) == 1) {
             tweetImprimir(actual->data);
             encontrados++;
         }
