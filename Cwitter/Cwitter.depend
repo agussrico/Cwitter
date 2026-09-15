@@ -19,3 +19,33 @@
 1789146978 source:c:\users\fran0\documents\github2\cwitter\cwitter\user.c
 	"user.h"
 
+1789426623 source:c:\users\mateo\onedrive\documentos\github\cwitter\cwitter\lista.c
+	"lista.h"
+
+1789426623 c:\users\mateo\onedrive\documentos\github\cwitter\cwitter\lista.h
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+
+1789426623 source:c:\users\mateo\onedrive\documentos\github\cwitter\cwitter\user.c
+	"user.h"
+
+1789426623 c:\users\mateo\onedrive\documentos\github\cwitter\cwitter\user.h
+	"lista.h"
+
+1789442954 source:c:\users\mateo\onedrive\documentos\github\cwitter\cwitter\tweet.c
+	"tweet.h"
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+
+1789442496 c:\users\mateo\onedrive\documentos\github\cwitter\cwitter\tweet.h
+	"lista.h"
+
+1789443654 source:c:\users\mateo\onedrive\documentos\github\cwitter\cwitter\main.c
+	<stdio.h>
+	<stdlib.h>
+	"lista.h"
+	"user.h"
+	"tweet.h"
+
