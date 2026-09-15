@@ -5,6 +5,7 @@
 
 #define MAX_TWEET 140
 #define ARCH_TWEETS "tweets.bin"
+#define SIN_PERMISO 7   // el tweet no es del usuario logueado
 
 typedef struct {
     unsigned int id;
@@ -15,8 +16,8 @@ typedef struct {
 int tweetsAbrir(tLista *feed);
 int tweetsGuardar(tLista *feed);
 int tweetPublicar(tLista *feed, char *autor, char *mensaje);
-int tweetModificar(tLista *feed, unsigned int id, char *nuevoMensaje);
-int tweetEliminar(tLista *feed, unsigned int id);
+int tweetModificar(tLista *feed, unsigned int id, char *nuevoMensaje, char *autor);
+int tweetEliminar(tLista *feed, unsigned int id, char *autor);
 void tweetsMostrarFeed(tLista *feed);
 void tweetBuscarYMostrar(tLista *feed, char *textoBuscado);
 void tweetImprimir(void *tweet);

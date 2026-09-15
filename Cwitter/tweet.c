@@ -51,27 +51,37 @@ int tweetPublicar(tLista *feed, char *autor, char *mensaje) {
     return listaInsertar(feed, &nuevoTweet, sizeof(Tweet));
 }
 
-int tweetModificar(tLista *feed, unsigned int id, char *nuevoMensaje) {
+int tweetModificar(tLista *feed, unsigned int id, char *nuevoMensaje, char *autor) {
 
     tNodo *nodo = listaBuscarYDevolver(feed, &id, cmpTweetId);
 
-    if (nodo != NULL) {
-        Tweet *t = (Tweet *)nodo->data;
+    if (nodo == NULL)
+        return NODO_NO_ENCONTRADO;
 
-        strncpy(t->mensaje, nuevoMensaje, MAX_TWEET);
-        t->mensaje[MAX_TWEET] = '\0';
+    Tweet *t = (Tweet *)nodo->data;
 
-        return TODO_OK;
-    }
+    if (strcmp(t->autor, autor) != 0)
+        return SIN_PERMISO;
 
-    return NODO_NO_ENCONTRADO;
+    strncpy(t->mensaje, nuevoMensaje, MAX_TWEET);
+    t->mensaje[MAX_TWEET] = '\0';
+
+    return TODO_OK;
 }
 
-int tweetEliminar(tLista *feed, unsigned int id) {
+int tweetEliminar(tLista *feed, unsigned int id, char *autor) {
 
-    int resultado = listaEliminarNodo(feed, &id, cmpTweetId);
+    tNodo *nodo = listaBuscarYDevolver(feed, &id, cmpTweetId);
 
-    return resultado;
+    if (nodo == NULL)
+        return NODO_NO_ENCONTRADO;
+
+    Tweet *t = (Tweet *)nodo->data;
+
+    if (strcmp(t->autor, autor) != 0)
+        return SIN_PERMISO;
+
+    return listaEliminarNodo(feed, &id, cmpTweetId);
 }
 
 int tweetsAbrir(tLista *feed) {

@@ -131,6 +131,7 @@ int main()
 
             char bufferMensaje[300]; // Buffer temporal grande
             unsigned int idTemp;
+            int resultado;
 
             switch(opcMenu) {
                 case 1:
@@ -164,11 +165,14 @@ int main()
                     fgets(bufferMensaje, sizeof(bufferMensaje), stdin);
                     bufferMensaje[strcspn(bufferMensaje, "\n")] = 0;
 
-                    if (tweetModificar(&listaTweets, idTemp, bufferMensaje) == TODO_OK) {
+                    resultado = tweetModificar(&listaTweets, idTemp, bufferMensaje, pUsuarioActual->user);
+
+                    if (resultado == TODO_OK)
                         printf("\n  [!] Tweet modificado.\n");
-                    } else {
+                    else if (resultado == SIN_PERMISO)
+                        printf("\n  [!] Ese tweet no es tuyo, no podes modificarlo.\n");
+                    else
                         printf("\n  [!] No se encontro el tweet.\n");
-                    }
                     break;
 
                 case 5:
@@ -176,11 +180,14 @@ int main()
                     scanf("%u", &idTemp);
                     while ((getchar()) != '\n');
 
-                    if (tweetEliminar(&listaTweets, idTemp) == TODO_OK) {
+                    resultado = tweetEliminar(&listaTweets, idTemp, pUsuarioActual->user);
+
+                    if (resultado == TODO_OK)
                         printf("\n  [!] Tweet eliminado.\n");
-                    } else {
+                    else if (resultado == SIN_PERMISO)
+                        printf("\n  [!] Ese tweet no es tuyo, no podes eliminarlo.\n");
+                    else
                         printf("\n  [!] No se encontro el tweet.\n");
-                    }
                     break;
 
                 case 6: // Inicio y cierre de sesión
