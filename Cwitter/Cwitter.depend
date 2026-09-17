@@ -33,16 +33,16 @@
 1789426623 c:\users\mateo\onedrive\documentos\github\cwitter\cwitter\user.h
 	"lista.h"
 
-1789442954 source:c:\users\mateo\onedrive\documentos\github\cwitter\cwitter\tweet.c
+1789613005 source:c:\users\mateo\onedrive\documentos\github\cwitter\cwitter\tweet.c
 	"tweet.h"
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
 
-1789442496 c:\users\mateo\onedrive\documentos\github\cwitter\cwitter\tweet.h
+1789613005 c:\users\mateo\onedrive\documentos\github\cwitter\cwitter\tweet.h
 	"lista.h"
 
-1789443654 source:c:\users\mateo\onedrive\documentos\github\cwitter\cwitter\main.c
+1789683376 source:c:\users\mateo\onedrive\documentos\github\cwitter\cwitter\main.c
 	<stdio.h>
 	<stdlib.h>
 	"lista.h"
@@ -78,4 +78,14 @@
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
+
+1789426623 source:c:\users\mateo\onedrive\documentos\github\cwitter\cwitter\test_users.c
+	"lista.h"
+	"user.h"
+
+1789683050 source:c:\users\mateo\onedrive\documentos\github\cwitter\cwitter\test_tweets.c
+	"lista.h"
+	"tweet.h"
+	<stdio.h>
+	<stdlib.h>
 
