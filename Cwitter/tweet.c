@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-// Variable global estática para autoincrementar el ID de los tweets durante la ejecución
+// Variable global estï¿½tica para autoincrementar el ID de los tweets durante la ejecuciï¿½n
 static unsigned int ultimo_id = 0;
 
 
@@ -38,6 +38,7 @@ void tweetImprimir(void *dato) {
 int tweetPublicar(tLista *feed, char *autor, char *mensaje) {
 
     Tweet nuevoTweet;
+    memset(&nuevoTweet, 0, sizeof(Tweet));
 
     ultimo_id++;
     nuevoTweet.id = ultimo_id;
