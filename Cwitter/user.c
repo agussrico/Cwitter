@@ -53,8 +53,9 @@ int usersGuardar(tLista* lista)
 int userRegistrar(tLista* lista, char* user, char* pass)
 {
     User u;
-    strcpy(u.pass,pass);
-    strcpy(u.user,user);
+    memset(&u, 0, sizeof(User));
+    strncpy(u.pass, pass, sizeof(u.pass) - 1);
+    strncpy(u.user, user, sizeof(u.user) - 1);
 
     if(!listaBuscarYDevolver(lista,&u,cmpUser)){
         return listaInsertar(lista,&u,sizeof(User));
@@ -65,7 +66,8 @@ int userRegistrar(tLista* lista, char* user, char* pass)
 User* userIniciarSesion(tLista* lista, char* user, char* pass)
 {
     User busqueda;
-    strcpy(busqueda.user,user);
+    memset(&busqueda, 0, sizeof(User));
+    strncpy(busqueda.user, user, sizeof(busqueda.user) - 1);
 
     tNodo* nodo = listaBuscarYDevolver(lista,&busqueda,cmpUser);
     if(!nodo)

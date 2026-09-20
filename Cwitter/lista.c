@@ -10,7 +10,7 @@ int listaVacia(tLista *lista){
     return lista->cant == 0;
 }
 
-int listaLlena(tLista *lista, size_t dataSize){
+int listaLlena(size_t dataSize){
     void *nodo = malloc(sizeof(tNodo));
     void *data;
     if(!nodo){
@@ -29,7 +29,7 @@ int listaLlena(tLista *lista, size_t dataSize){
 int listaInsertar(tLista *lista, void *data, size_t dataSize){
     tNodo *nuevoNodo;
     void *nuevaData;
-    if(listaLlena(lista, dataSize)){
+    if(listaLlena(dataSize)){
         return LISTA_LLENA;
     }
     ///Declaro el nodo

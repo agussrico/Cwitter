@@ -38,6 +38,10 @@
 		<Unit filename="main.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="tweet.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="tweet.h" />
 		<Unit filename="user.c">
 			<Option compilerVar="CC" />
 		</Unit>
