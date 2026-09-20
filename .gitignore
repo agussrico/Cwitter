@@ -1,3 +1,7 @@
+# Archivos de proyecto de codeblocks
+*.obj
+*.bin
+
 # Prerequisites
 *.d
 

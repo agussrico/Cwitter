@@ -1,0 +1,121 @@
+# depslib dependency file v1.0
+1789146637 source:c:\users\fran0\documents\github2\cwitter\cwitter\main.c
+	<stdio.h>
+	<stdlib.h>
+	"lista.h"
+	"user.h"
+
+1789146414 source:c:\users\fran0\documents\github2\cwitter\cwitter\lista.c
+	"lista.h"
+
+1789146414 c:\users\fran0\documents\github2\cwitter\cwitter\lista.h
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+
+1789146493 c:\users\fran0\documents\github2\cwitter\cwitter\user.h
+	"lista.h"
+
+1789146978 source:c:\users\fran0\documents\github2\cwitter\cwitter\user.c
+	"user.h"
+
+1789426623 source:c:\users\mateo\onedrive\documentos\github\cwitter\cwitter\lista.c
+	"lista.h"
+
+1789426623 c:\users\mateo\onedrive\documentos\github\cwitter\cwitter\lista.h
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+
+1789426623 source:c:\users\mateo\onedrive\documentos\github\cwitter\cwitter\user.c
+	"user.h"
+
+1789426623 c:\users\mateo\onedrive\documentos\github\cwitter\cwitter\user.h
+	"lista.h"
+
+1789613005 source:c:\users\mateo\onedrive\documentos\github\cwitter\cwitter\tweet.c
+	"tweet.h"
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+
+1789613005 c:\users\mateo\onedrive\documentos\github\cwitter\cwitter\tweet.h
+	"lista.h"
+
+1789683376 source:c:\users\mateo\onedrive\documentos\github\cwitter\cwitter\main.c
+	<stdio.h>
+	<stdlib.h>
+	"lista.h"
+	"user.h"
+	"tweet.h"
+
+1789481014 source:c:\fran\cwitter\cwitter\lista.c
+	"lista.h"
+
+1789481014 c:\fran\cwitter\cwitter\lista.h
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+
+1789494258 source:c:\fran\cwitter\cwitter\main.c
+	<stdio.h>
+	<stdlib.h>
+	"lista.h"
+	"user.h"
+	"tweet.h"
+
+1789481014 c:\fran\cwitter\cwitter\user.h
+	"lista.h"
+
+1789494258 c:\fran\cwitter\cwitter\tweet.h
+	"lista.h"
+
+1789481014 source:c:\fran\cwitter\cwitter\user.c
+	"user.h"
+
+1789494258 source:c:\fran\cwitter\cwitter\tweet.c
+	"tweet.h"
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+
+1789426623 source:c:\users\mateo\onedrive\documentos\github\cwitter\cwitter\test_users.c
+	"lista.h"
+	"user.h"
+
+1789683050 source:c:\users\mateo\onedrive\documentos\github\cwitter\cwitter\test_tweets.c
+	"lista.h"
+	"tweet.h"
+	<stdio.h>
+	<stdlib.h>
+
+1789911407 source:c:\users\fran0\onedrive\documents\github\cwitter\cwitter\lista.c
+	"lista.h"
+
+1789911407 c:\users\fran0\onedrive\documents\github\cwitter\cwitter\lista.h
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+
+1789910600 source:c:\users\fran0\onedrive\documents\github\cwitter\cwitter\tweet.c
+	"tweet.h"
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+
+1789910600 c:\users\fran0\onedrive\documents\github\cwitter\cwitter\tweet.h
+	"lista.h"
+
+1789910596 source:c:\users\fran0\onedrive\documents\github\cwitter\cwitter\user.c
+	"user.h"
+
+1789910596 c:\users\fran0\onedrive\documents\github\cwitter\cwitter\user.h
+	"lista.h"
+
+1789910981 source:c:\users\fran0\onedrive\documents\github\cwitter\cwitter\main.c
+	<stdio.h>
+	<stdlib.h>
+	"lista.h"
+	"user.h"
+	"tweet.h"
+
