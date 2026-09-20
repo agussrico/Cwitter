@@ -89,3 +89,33 @@
 	<stdio.h>
 	<stdlib.h>
 
+1789911407 source:c:\users\fran0\onedrive\documents\github\cwitter\cwitter\lista.c
+	"lista.h"
+
+1789911407 c:\users\fran0\onedrive\documents\github\cwitter\cwitter\lista.h
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+
+1789910600 source:c:\users\fran0\onedrive\documents\github\cwitter\cwitter\tweet.c
+	"tweet.h"
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+
+1789910600 c:\users\fran0\onedrive\documents\github\cwitter\cwitter\tweet.h
+	"lista.h"
+
+1789910596 source:c:\users\fran0\onedrive\documents\github\cwitter\cwitter\user.c
+	"user.h"
+
+1789910596 c:\users\fran0\onedrive\documents\github\cwitter\cwitter\user.h
+	"lista.h"
+
+1789910981 source:c:\users\fran0\onedrive\documents\github\cwitter\cwitter\main.c
+	<stdio.h>
+	<stdlib.h>
+	"lista.h"
+	"user.h"
+	"tweet.h"
+

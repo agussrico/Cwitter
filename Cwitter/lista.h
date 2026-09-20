@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <string.h>
 #define TODO_OK 0
-#define LISTA_VACIA 2
 #define LISTA_LLENA 3
 #define NODO_NO_ENCONTRADO 4
 
@@ -24,7 +23,7 @@ typedef struct{
 
 void listaInicializar(tLista *lista);
 int listaVacia(tLista *lista);
-int listaLlena(tLista *lista, size_t dataSize);
+int listaLlena(size_t dataSize);
 int listaInsertar(tLista *lista, void *data, size_t dataSize);
 int listaBuscarYAccion(tLista *lista, void *busqueda, int (*cmp)(void *, void*), void (*accion)(void *));
 tNodo *listaBuscarYDevolver(tLista *lista, void *busqueda, int (*cmp)(void *, void*));

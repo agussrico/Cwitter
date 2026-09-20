@@ -4,6 +4,24 @@
 #include "user.h"
 #include "tweet.h"
 
+int usarLinux = 0;
+
+void leerConfig()
+{
+    char linea[50];
+    FILE *f = fopen("config.ini", "r");
+    if(f == NULL) return;
+    fgets(linea, sizeof(linea), f);
+    if(strstr(linea, "linux=true")) usarLinux = 1;
+    fclose(f);
+}
+
+void limpiarPantalla()
+{
+    if(usarLinux) system("clear");
+    else system("cls");
+}
+
 void mostrarBanner()
 {
     printf("=====================================================\n");
@@ -44,6 +62,8 @@ int main()
 {
     User *pUsuarioActual = NULL;
 
+    leerConfig();
+
     ///tweets
     tLista listaTweets;
     listaInicializar(&listaTweets);
@@ -60,12 +80,12 @@ int main()
     while(1){
         ///bucle menu
         while(pUsuarioActual == NULL){
-            system("cls");
+            limpiarPantalla();
             mostrarBanner();
             mostrarMenuPrincipal();
             scanf("%d", &opcion);
             if(opcion == 1){
-                system("cls");
+                limpiarPantalla();
                 mostrarBanner();
                 mostrarEncabezado("INICIAR SESION");
                 printf("  Usuario: ");
@@ -80,7 +100,7 @@ int main()
                 }
             }
             else if(opcion == 2){
-                system("cls");
+                limpiarPantalla();
                 mostrarBanner();
                 mostrarEncabezado("REGISTRO DE NUEVO USUARIO");
                 printf("  Usuario: ");
@@ -107,12 +127,12 @@ int main()
                 getchar(); getchar();
             }
         }
-        system("cls");
+        limpiarPantalla();
         mostrarBanner();
         printf("\n  >> Sesion iniciada. Bienvenido, %s! <<\n\n", pUsuarioActual->user);
         //break; ///aca iria el menu principal de twitter con el usuario iniciado
         while(pUsuarioActual != NULL) {
-            system("cls");
+            limpiarPantalla();
             mostrarBanner();
             printf("\n  [ Usuario: @%s ]\n\n", pUsuarioActual->user);
             printf("  1. Ver Feed\n");
@@ -135,7 +155,7 @@ int main()
 
             switch(opcMenu) {
                 case 1:
-                    system("cls");
+                    limpiarPantalla();
                     tweetsMostrarFeed(&listaTweets);
                     break;
 
