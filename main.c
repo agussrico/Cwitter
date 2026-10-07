@@ -3,6 +3,7 @@
 #include "lista.h"
 #include "user.h"
 #include "tweet.h"
+#include "famecheck.h"
 
 int usarLinux = 0;
 
@@ -130,11 +131,18 @@ int main()
         limpiarPantalla();
         mostrarBanner();
         printf("\n  >> Sesion iniciada. Bienvenido, %s! <<\n\n", pUsuarioActual->user);
+   
         //break; ///aca iria el menu principal de twitter con el usuario iniciado
         while(pUsuarioActual != NULL) {
             limpiarPantalla();
             mostrarBanner();
             printf("\n  [ Usuario: @%s ]\n\n", pUsuarioActual->user);
+            if(pUsuarioActual->verficado == 1){
+                printf("Usuario VERIFICADO!\n");
+            }
+            else{
+                printf("!!! Usuario no verificado !!!. Ingrese 0 para verificar\n");
+            }
             printf("  1. Ver Feed\n");
             printf("  2. Publicar un Tweet\n");
             printf("  3. Buscar un Tweet\n");
@@ -146,7 +154,7 @@ int main()
             int opcMenu;
             scanf("%d", &opcMenu);
 
-            // Limpiamos el buffer de entrada (CRÍTICO antes de leer strings con fgets)
+            // Limpiamos el buffer de entrada (CRï¿½TICO antes de leer strings con fgets)
             while ((getchar()) != '\n');
 
             char bufferMensaje[300]; // Buffer temporal grande
@@ -210,9 +218,25 @@ int main()
                         printf("\n  [!] No se encontro el tweet.\n");
                     break;
 
-                case 6: // Inicio y cierre de sesión
+                case 6: // Inicio y cierre de sesiï¿½n
                     pUsuarioActual = NULL;
                     printf("\n  [!] Cerrando sesion...\n");
+                    break;
+                
+                case 0:
+                    if(famecheckIniciar() != FAMECHECK_OK){
+                        printf("Error al leer la apikey necesaria para activar Famecheck\n");
+                    }
+                    if(famecheckVerificarCuenta(pUsuarioActual->user, &pUsuarioActual->verficado) != FAMECHECK_OK){
+                        printf("Famecheck Error: Error de contacto con la API\n");
+                    }
+                    else if(pUsuarioActual->verficado == 1){
+                        printf("Famecheck Activdo: Usuario Verificado Correctamente\n");
+                    }
+                    else{
+                        printf("Famecheck No Activado: Usuario no Verificado\n");
+                    }
+                    famecheckFinalizar();
                     break;
 
                 default:
