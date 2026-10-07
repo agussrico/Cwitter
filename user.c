@@ -56,6 +56,8 @@ int userRegistrar(tLista* lista, char* user, char* pass)
     memset(&u, 0, sizeof(User));
     strncpy(u.pass, pass, sizeof(u.pass) - 1);
     strncpy(u.user, user, sizeof(u.user) - 1);
+    u.cantTweets = 0;
+    u.verficado = 0;
 
     if(!listaBuscarYDevolver(lista,&u,cmpUser)){
         return listaInsertar(lista,&u,sizeof(User));
@@ -79,4 +81,3 @@ User* userIniciarSesion(tLista* lista, char* user, char* pass)
 
     return encontrado;
 }
-

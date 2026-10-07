@@ -10,6 +10,8 @@
 typedef struct {
     char user[20];
     char pass[20];
+    int cantTweets;
+    int verficado;
 } User;
 
 void userImprimir(void *user);
