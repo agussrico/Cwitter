@@ -1,7 +1,12 @@
 #ifndef TWEET_H_INCLUDED
 #define TWEET_H_INCLUDED
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "famecheck.h"
 #include "lista.h"
+#include "user.h"
 
 #define MAX_TWEET 140
 #define ARCH_TWEETS "tweets.bin"
@@ -11,11 +16,12 @@ typedef struct {
     unsigned int id;
     char autor[20];
     char mensaje[MAX_TWEET + 1]; // 140 caracteres mas el /0
+    int reportadoAFamecheck;
 } Tweet;
 
 int tweetsAbrir(tLista *feed);
 int tweetsGuardar(tLista *feed);
-int tweetPublicar(tLista *feed, char *autor, char *mensaje);
+int tweetPublicar(tLista *feed, User *autor, char *mensaje);
 int tweetModificar(tLista *feed, unsigned int id, char *nuevoMensaje, char *autor);
 int tweetEliminar(tLista *feed, unsigned int id, char *autor);
 void tweetsMostrarFeed(tLista *feed);

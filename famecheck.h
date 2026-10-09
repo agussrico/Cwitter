@@ -7,6 +7,8 @@
 #define FAMECHECK_ERROR_MEMORIA      (-3)
 #define FAMECHECK_ERROR_CONFIG       (-4)
 
+#define TOP_CANT 5
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -16,8 +18,20 @@
 #include "lista.h"
 #include "tweet.h"
 
+
+//estructura para bajar la actividad de los usuarios y sacar el top 5
+typedef struct {
+    char nombre[20];
+    int cantidadCweets;
+} ActividadFame;
+
+
+
 int famecheckIniciar(void);
 void famecheckFinalizar(void);
-int famecheckVerificarCuenta(const char *nombre, int *verificado);
+int famecheckVerificarCuenta(const char *, int *);
+int famecheckReportarPublicacion(const char *, const char *, int *);
+int famecheckObtenerTop5(tLista *top);
+void famecheckMostrarUsuarioTop(void *data);
 
 #endif // FAMECHECK_H_INCLUDED

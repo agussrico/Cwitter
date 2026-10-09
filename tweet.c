@@ -1,8 +1,6 @@
 #include "tweet.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+
 
 // Variable global est�tica para autoincrementar el ID de los tweets durante la ejecuci�n
 static unsigned int ultimo_id = 0;
@@ -35,19 +33,38 @@ void tweetImprimir(void *dato) {
 }
 
 
-int tweetPublicar(tLista *feed, char *autor, char *mensaje) {
-
+int tweetPublicar(tLista *feed, User *autor, char *mensaje) {
+    //Se modifico esta funcion para que cuando se ingrese la funcion reciba el USER y no solo su nombre 
+    //De esta manera se chequea si esta verificado y se evitan consultas de mas a la API
     Tweet nuevoTweet;
     memset(&nuevoTweet, 0, sizeof(Tweet));
-
+    
     ultimo_id++;
     nuevoTweet.id = ultimo_id;
 
-    strncpy(nuevoTweet.autor, autor, sizeof(nuevoTweet.autor) - 1);
+    nuevoTweet.reportadoAFamecheck = 0;
+
+    strncpy(nuevoTweet.autor, autor->user, sizeof(nuevoTweet.autor) - 1);
     nuevoTweet.autor[sizeof(nuevoTweet.autor) - 1] = '\0';
 
     strncpy(nuevoTweet.mensaje, mensaje, MAX_TWEET);
     nuevoTweet.mensaje[MAX_TWEET] = '\0';
+
+
+    // LOGICA FAMECHECK SUMADA A TWEET----
+    printf("Reportando Tweet en FameCheck...\n");
+    famecheckIniciar();
+    if(autor->verficado == 1){
+        if (famecheckReportarPublicacion(autor->user, mensaje, &nuevoTweet.reportadoAFamecheck) != FAMECHECK_OK){
+            printf("Error al Reportar el tweet a FameCheck\n");
+        }
+        else{
+            printf("[!] Tweet reportado correctamente [!]");
+        }
+    }
+
+    famecheckFinalizar();
+    // LOGICA FAMECHECK SUMADA A TWEET----
 
     return listaInsertar(feed, &nuevoTweet, sizeof(Tweet));
 }
