@@ -33,6 +33,7 @@ void famecheckFinalizar(void);
 int famecheckVerificarCuenta(const char *, int *);
 int famecheckReportarPublicacion(const char *, const char *, int *);
 int famecheckObtenerTop5(tLista *top);
+int famecheckInsertarEnTop(tLista *top, ActividadFame *actividad);
 void famecheckMostrarUsuarioTop(void *data);
 int famecheckRegistrarLog(char* user, int tweetId, char* error);
 

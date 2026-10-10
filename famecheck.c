@@ -270,6 +270,20 @@ int famecheckCmpActividad(void *user1, void *user2){
     }
 }
 
+//Inserta ordenado en el top y si pasa de TOP_CANT saca al ultimo
+int famecheckInsertarEnTop(tLista *top, ActividadFame *actividad)
+{
+    if (listaInsertarOrdenado(top, actividad, sizeof(ActividadFame), famecheckCmpActividad) != TODO_OK)
+    {
+        return FAMECHECK_ERROR_MEMORIA;
+    }
+    if (top->cant > TOP_CANT)
+    {
+        listaEliminarUltimo(top); /* el sexto sale */
+    }
+    return TODO_OK;
+}
+
 //Guarda en una lista el TOP 5 de usuarios chequeados con mas actividad chequeando en la api
 int famecheckObtenerTop5(tLista *top)
 {
@@ -310,13 +324,9 @@ int famecheckObtenerTop5(tLista *top)
                     strncpy(nuevo.nombre, nombre->valuestring, sizeof(nuevo.nombre) - 1);
                     nuevo.cantidadCweets = cweets->valueint;
                     ///cada elemento que bajo lo guardo en un struct y luego lo inserto ordenado
-                    if (listaInsertarOrdenado(top, &nuevo, sizeof(ActividadFame), famecheckCmpActividad) != TODO_OK)
+                    if (famecheckInsertarEnTop(top, &nuevo) != TODO_OK)
                     {
                         estado = FAMECHECK_ERROR_MEMORIA;
-                    }
-                    if (top->cant > TOP_CANT)
-                    {
-                        listaEliminarUltimo(top); /* el sexto sale */
                     }
                 }
             }
