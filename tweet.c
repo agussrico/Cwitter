@@ -52,13 +52,22 @@ int tweetPublicar(tLista *feed, User *autor, char *mensaje) {
 
 
     // LOGICA FAMECHECK SUMADA A TWEET----
-    if(autor->verficado == 1){
+        if(autor->verficado == 1){
         printf("Reportando Tweet en FameCheck...\n");
-        if (famecheckReportarPublicacion(autor->user, mensaje, &nuevoTweet.reportadoAFamecheck) != FAMECHECK_OK){
-            printf("Error al Reportar el tweet a FameCheck\n");
+        int reporte = famecheckReportarPublicacion(autor->user, mensaje, &nuevoTweet.reportadoAFamecheck);
+
+        if(reporte == FAMECHECK_OK){
+            printf("[!] Tweet reportado correctamente [!]\n");
         }
         else{
-            printf("[!] Tweet reportado correctamente [!]\n");
+            printf("Error al Reportar el tweet a FameCheck\n");
+            switch(reporte){
+                case FAMECHECK_ERROR_RED:       famecheckRegistrarLog(autor->user, nuevoTweet.id, "FAMECHECK_ERROR_RED"); break;
+                case FAMECHECK_ERROR_RESPUESTA: famecheckRegistrarLog(autor->user, nuevoTweet.id, "FAMECHECK_ERROR_RESPUESTA"); break;
+                case FAMECHECK_ERROR_MEMORIA:   famecheckRegistrarLog(autor->user, nuevoTweet.id, "FAMECHECK_ERROR_MEMORIA"); break;
+                case FAMECHECK_ERROR_CONFIG:    famecheckRegistrarLog(autor->user, nuevoTweet.id, "FAMECHECK_ERROR_CONFIG"); break;
+                default:                        famecheckRegistrarLog(autor->user, nuevoTweet.id, "ERROR_DESCONOCIDO");
+            }
         }
     }
     // LOGICA FAMECHECK SUMADA A TWEET----

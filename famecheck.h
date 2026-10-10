@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <curl/curl.h>
+#include <time.h>
 #include "cJSON.h"
 #include "user.h"
 #include "lista.h"
@@ -33,5 +34,6 @@ int famecheckVerificarCuenta(const char *, int *);
 int famecheckReportarPublicacion(const char *, const char *, int *);
 int famecheckObtenerTop5(tLista *top);
 void famecheckMostrarUsuarioTop(void *data);
+int famecheckRegistrarLog(char* user, int tweetId, char* error);
 
 #endif // FAMECHECK_H_INCLUDED

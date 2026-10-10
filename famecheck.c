@@ -333,3 +333,22 @@ void famecheckMostrarUsuarioTop(void *data){
     ActividadFame *f = (ActividadFame *)data;
     printf("  Usuario: %s, Cantidad Tweets %d\n", f->nombre, f->cantidadCweets);
 }
+
+int famecheckRegistrarLog(char* user, int tweetId, char* error)
+{
+    FILE* logs = fopen("logs.log","a");
+    if(!logs)
+    {
+        printf("\nNo se pudo guardar el error en el archivo de logs\n");
+        return ERROR_AP_ARCH;
+    }
+    
+    time_t tiempo = time(NULL);
+    char fechaHora[20];
+    strftime(fechaHora, sizeof(fechaHora), "%d/%m/%Y %H:%M:%S", localtime(&tiempo));
+
+    fprintf(logs, "[%s] Error al reportar tweet %d de @%s: %s\n", fechaHora, tweetId, user, error);
+
+    fclose(logs);
+    return TODO_OK;
+}
