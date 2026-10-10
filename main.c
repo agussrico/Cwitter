@@ -229,6 +229,13 @@ int main()
 
     leerConfig();
 
+    ///famecheck: curl se inicia una sola vez para todo el programa
+    if(famecheckIniciar() != FAMECHECK_OK){
+        mostrarMensaje(ROJO, "  [!] Error al iniciar Famecheck (revisar apikey.key)\n");
+        printf("  Presione ENTER para continuar...");
+        getchar();
+    }
+
     ///tweets
     tLista listaTweets;
     tNodo *nodoTweet = NULL;
@@ -288,6 +295,7 @@ int main()
                 tweetsGuardar(&listaTweets);
                 listaVaciar(&listaUsuarios);
                 listaVaciar(&listaTweets);
+                famecheckFinalizar();
 
                 return 0;
             }
@@ -415,12 +423,14 @@ int main()
 
                  case '6':
                     mostrarMensaje(CIAN, "Usuarios verificados con mayor cantidad de interacciones\n");
-                    famecheckIniciar();
                     listaInicializar(&listaFamecheckTop);
-                    famecheckObtenerTop5(&listaFamecheckTop);
-                    listaRecorrerYAccion(&listaFamecheckTop, famecheckMostrarUsuarioTop);
+                    if(famecheckObtenerTop5(&listaFamecheckTop) != FAMECHECK_OK)
+                        mostrarMensaje(ROJO, "Famecheck Error: Error de contacto con la API\n");
+                    else if(listaVacia(&listaFamecheckTop))
+                        mostrarMensaje(AMARILLO, "No hay usuarios verificados todavia\n");
+                    else
+                        listaRecorrerYAccion(&listaFamecheckTop, famecheckMostrarUsuarioTop);
                     listaVaciar(&listaFamecheckTop);
-                    famecheckFinalizar();
                     break;
 
                 case '7':
@@ -429,9 +439,6 @@ int main()
                     break;
 
                 case '0':
-                    if(famecheckIniciar() != FAMECHECK_OK){
-                        mostrarMensaje(ROJO, "Error al leer la apikey necesaria para activar Famecheck\n");
-                    }
                     if(famecheckVerificarCuenta(pUsuarioActual->user, &pUsuarioActual->verficado) != FAMECHECK_OK){
                         mostrarMensaje(ROJO, "Famecheck Error: Error de contacto con la API\n");
                     }
@@ -441,7 +448,6 @@ int main()
                     else{
                         mostrarMensaje(AMARILLO, "Famecheck No Activado: Usuario no Verificado\n");
                     }
-                    famecheckFinalizar();
                     break;
 
                 default:
@@ -461,5 +467,6 @@ int main()
     ///vacio la lista
     listaVaciar(&listaUsuarios);
     listaVaciar(&listaTweets);
+    famecheckFinalizar();
     return 0;
 }

@@ -248,14 +248,15 @@ int famecheckReportarPublicacion(const char *nombre, const char *mensaje, int *r
     return FAMECHECK_ERROR_RESPUESTA;
 }
 
+//devuelve > 0 si user1 va despues de user2 (orden descendente por cantidad de cweets)
 int famecheckCmpActividad(void *user1, void *user2){
     ActividadFame *aUser1 = (ActividadFame *)user1;
     ActividadFame *aUser2 = (ActividadFame *)user2;
 
-    if(aUser1->cantidadCweets > aUser2->cantidadCweets){
+    if(aUser1->cantidadCweets < aUser2->cantidadCweets){
         return 1;
     }
-    else if(aUser1->cantidadCweets < aUser2->cantidadCweets){
+    else if(aUser1->cantidadCweets > aUser2->cantidadCweets){
         return -1;
     }
     else{
@@ -330,5 +331,5 @@ int famecheckObtenerTop5(tLista *top)
 
 void famecheckMostrarUsuarioTop(void *data){
     ActividadFame *f = (ActividadFame *)data;
-    printf("Usuario: %s, Cantidad Tweets %d", f->nombre, f->cantidadCweets);
+    printf("  Usuario: %s, Cantidad Tweets %d\n", f->nombre, f->cantidadCweets);
 }

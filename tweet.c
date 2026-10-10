@@ -52,18 +52,15 @@ int tweetPublicar(tLista *feed, User *autor, char *mensaje) {
 
 
     // LOGICA FAMECHECK SUMADA A TWEET----
-    printf("Reportando Tweet en FameCheck...\n");
-    famecheckIniciar();
     if(autor->verficado == 1){
+        printf("Reportando Tweet en FameCheck...\n");
         if (famecheckReportarPublicacion(autor->user, mensaje, &nuevoTweet.reportadoAFamecheck) != FAMECHECK_OK){
             printf("Error al Reportar el tweet a FameCheck\n");
         }
         else{
-            printf("[!] Tweet reportado correctamente [!]");
+            printf("[!] Tweet reportado correctamente [!]\n");
         }
     }
-
-    famecheckFinalizar();
     // LOGICA FAMECHECK SUMADA A TWEET----
 
     return listaInsertar(feed, &nuevoTweet, sizeof(Tweet));
