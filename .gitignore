@@ -1,9 +1,17 @@
 # apikey
-.key
+*.key
+
+# Logs de fallos de FameCheck
+*.log
 
 # Archivos de proyecto de codeblocks
 *.obj
 *.bin
+bin/
+obj/
+
+# Ejecutable compilado en Linux (sin extension)
+cwitter
 
 # Prerequisites
 *.d
