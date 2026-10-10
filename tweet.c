@@ -26,6 +26,20 @@ int cmpTweetTexto(void *a, void *b) {
     return 0; // No encontrado
 }
 
+int cmpTweetFeed(void *a, void *b)
+{
+    Tweet *t1 = (Tweet *)a;
+    Tweet *t2 = (Tweet *)b;
+
+    if(t1->verificado != t2->verificado)
+        return t2->verificado - t1->verificado; /*se muestra primero el verificado*/
+
+    if(t1->fecha != t2->fecha)
+        return t1->fecha > t2->fecha ? -1 : 1;/*si ambos estan verificados/no verificados, se muestra por fecha*/
+
+    return t1->id > t2->id ? -1 : 1; // mismo segundo: el de id mas alto es el mas nuevo
+}
+
 void tweetImprimir(void *dato) {
     Tweet *t = (Tweet *)dato;
     printf("\n[ID: %u] @%s dijo:\n%s\n", t->id, t->autor, t->mensaje);
@@ -41,11 +55,13 @@ int tweetPublicar(tLista *feed, User *autor, char *mensaje) {
     
     ultimo_id++;
     nuevoTweet.id = ultimo_id;
+    nuevoTweet.fecha = time(NULL);
 
     nuevoTweet.reportadoAFamecheck = 0;
 
     strncpy(nuevoTweet.autor, autor->user, sizeof(nuevoTweet.autor) - 1);
     nuevoTweet.autor[sizeof(nuevoTweet.autor) - 1] = '\0';
+    nuevoTweet.verificado = autor->verficado;
 
     strncpy(nuevoTweet.mensaje, mensaje, MAX_TWEET);
     nuevoTweet.mensaje[MAX_TWEET] = '\0';
@@ -72,7 +88,7 @@ int tweetPublicar(tLista *feed, User *autor, char *mensaje) {
     }
     // LOGICA FAMECHECK SUMADA A TWEET----
 
-    return listaInsertar(feed, &nuevoTweet, sizeof(Tweet));
+    return listaInsertarOrdenado(feed,&nuevoTweet,sizeof(Tweet),cmpTweetFeed);
 }
 
 int tweetModificar(tLista *feed, unsigned int id, char *nuevoMensaje, char *autor) {
@@ -119,7 +135,7 @@ int tweetsAbrir(tLista *feed) {
     Tweet aux;
     while (fread(&aux, sizeof(Tweet), 1, pf) == 1) {
 
-        listaInsertar(feed, &aux, sizeof(Tweet));
+        listaInsertarOrdenado(feed, &aux, sizeof(Tweet), cmpTweetFeed);
 
         if (aux.id > ultimo_id) {
             ultimo_id = aux.id;

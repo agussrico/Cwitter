@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include "famecheck.h"
 #include "lista.h"
 #include "user.h"
@@ -16,6 +17,8 @@ typedef struct {
     unsigned int id;
     char autor[20];
     char mensaje[MAX_TWEET + 1]; // 140 caracteres mas el /0
+    time_t fecha;
+    int verificado;
     int reportadoAFamecheck;
 } Tweet;
 
@@ -29,5 +32,6 @@ void tweetBuscarYMostrar(tLista *feed, char *textoBuscado);
 void tweetImprimir(void *tweet);
 int cmpTweetId(void *a, void *b);
 int cmpTweetTexto(void *a, void *b);
+int cmpTweetFeed(void *a, void *b);
 
 #endif // TWEET_H_INCLUDED

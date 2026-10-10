@@ -368,10 +368,8 @@ int main()
 
                     tweetPublicar(&listaTweets, pUsuarioActual, bufferMensaje);
                     mostrarMensaje(VERDE, "\n  [!] Tweet publicado con exito.\n");
-                    if(nodoTweet == NULL){
-                        nodoTweet = listaTweets.inicio;
-                        posTweet = (nodoTweet != NULL) ? 1 : 0;
-                    }
+                    nodoTweet = listaTweets.inicio;
+                    posTweet = (nodoTweet != NULL) ? 1 : 0;
 
                     break;
 
