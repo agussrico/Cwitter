@@ -42,17 +42,28 @@ int cmpTweetFeed(void *a, void *b)
 
 void tweetImprimir(void *dato) {
     Tweet *t = (Tweet *)dato;
-    printf("\n[ID: %u] @%s dijo:\n%s\n", t->id, t->autor, t->mensaje);
+
+    struct tm *tm_info = localtime(&t->fecha);
+    char fechaStr[20];
+    strftime(fechaStr, sizeof(fechaStr), "%d/%m/%Y %H:%M:%S", tm_info);
+
+    printf("\n[ID: %u] [%s] @%s", t->id, fechaStr, t->autor);
+
+    if (t->verificado == 1) {
+        printf(" [V]");
+    }
+
+    printf(" dijo:\n%s\n", t->mensaje);
     printf("----------------------------------------\n");
 }
 
 
 int tweetPublicar(tLista *feed, User *autor, char *mensaje) {
-    //Se modifico esta funcion para que cuando se ingrese la funcion reciba el USER y no solo su nombre 
+    //Se modifico esta funcion para que cuando se ingrese la funcion reciba el USER y no solo su nombre
     //De esta manera se chequea si esta verificado y se evitan consultas de mas a la API
     Tweet nuevoTweet;
     memset(&nuevoTweet, 0, sizeof(Tweet));
-    
+
     ultimo_id++;
     nuevoTweet.id = ultimo_id;
     nuevoTweet.fecha = time(NULL);
