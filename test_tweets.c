@@ -33,7 +33,7 @@ int main()
 
     printf("=== 1. Prueba: Plataforma vacia e inicio de persistencia ===\n");
     int carga = tweetsAbrir(&feed);
-    if(carga == TODO_OK && feed.cant == 0)
+    if(carga == ERROR_AP_ARCH && feed.cant == 0)
         printf("Plataforma vacia: No hay tweets previos o archivo nuevo.\n");
     else
         printf("Feed cargado desde archivo. Tweets actuales: %d\n", feed.cant);

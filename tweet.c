@@ -129,7 +129,7 @@ int tweetsAbrir(tLista *feed) {
     FILE *pf = fopen(ARCH_TWEETS, "rb");
 
     if (pf == NULL) {
-        return TODO_OK;
+        return ERROR_AP_ARCH;
     }
 
     Tweet aux;
