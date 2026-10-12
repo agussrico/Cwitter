@@ -22,7 +22,7 @@ Algoritmo y estructura de datos – 3640 – Comisión 90-3900
 **Entregas:**
 
 - Checkpoint Sprint 1 – 21/09/2026 (tag `v1-fundamentos`)
-- Sprint 2 – (completar fecha) (tag `v2-procesamiento`)
+- Sprint 2 – 12/10/2026 (tag `v2-procesamiento`)
 
 ---
 
@@ -140,7 +140,7 @@ En Linux (`linux=true`) los menús usan colores con códigos de escape ANSI; en 
 
 **Publicar (`tweetPublicar`).** Recibe el `User` completo (antes recibía solo el nombre). Asigna el siguiente id, la fecha y hora actual (`time(NULL)`) y si el autor está verificado, copia el autor y el mensaje (truncado a 140 caracteres) y lo inserta ordenado en el feed. Si el autor está verificado, antes reporta la publicación a FameCheck (ver abajo). La publicación se concreta aunque el reporte falle.
 
-**Reporte a FameCheck (`famecheckReportarPublicacion`, nueva).** Hace un `POST /api/Cwitter/Cweet` con el usuario y el mensaje. Solo se llama para autores verificados, porque FameCheck rechaza los reportes de cuentas no verificadas. FameCheck responde 204 cuando acepta el reporte (la documentación dice 201, ver problema 19), y en ese caso el tweet queda con `reportadoAFamecheck = 1`.
+**Reporte a FameCheck (`famecheckReportarPublicacion`, nueva).** Hace un `POST /api/Cwitter/Cweet` con el usuario y el mensaje. Solo se llama para autores verificados, porque FameCheck rechaza los reportes de cuentas no verificadas. FameCheck responde 204 cuando acepta el reporte (la documentación dice 201, ver problema 18), y en ese caso el tweet queda con `reportadoAFamecheck = 1`.
 
 **Log de fallos (`famecheckRegistrarLog`, nueva).** Si el reporte falla, se agrega una línea a `logs.log` con la fecha y hora, el id del tweet, el autor y el motivo (`FAMECHECK_ERROR_RED`, `FAMECHECK_ERROR_RESPUESTA`, etc.). No se reintenta el envío: como pide la consigna, alcanza con dejar constancia.
 
@@ -405,12 +405,11 @@ En el Sprint 2 se siguió el mismo criterio: todo lo que habla con el servicio e
 | 12 | curl se iniciaba y cerraba en cada publicación y en cada opción del menú, incluso para usuarios no verificados. | `tweetPublicar` y las opciones 0 y 6 llamaban a `famecheckIniciar` y `famecheckFinalizar`. | Se inicia una sola vez al arrancar `main` y se cierra al salir. | `7461930` |
 | 13 | Los mensajes de reporte y del top 5 quedaban pegados a la línea siguiente. | Faltaba el `\n` en el `printf` de "Tweet reportado correctamente" y en `famecheckMostrarUsuarioTop`. | Se agregaron los saltos de línea. El menú del top 5 ahora también avisa si la API falla o si no hay verificados. | `7461930` |
 | 14 | El proyecto de Code::Blocks no compilaba con FameCheck. | `Cwitter.cbp` no incluía `famecheck.c` ni `cJSON.c`, ni linkeaba `curl`. | Se agregaron las unidades, el directorio de includes de curl y la librería `curl` al linker. | `748ada8` (agussrico, 10/10) |
-| 15 | La clave de API quedó subida al repositorio. | El `.gitignore` tenía `.key`, que solo ignora un archivo llamado exactamente `.key`, y no `apikey.key`. | Se cambió a `*.key`, se sacó `apikey.key` del repositorio y hay que pedir una clave nueva a la cátedra, porque la anterior quedó en el historial. | `8670e77` (agussrico, 10/10) |
-| 16 | Había un ejecutable y un archivo viejo de `main` en el repositorio. | Se subieron `cwitter` (el binario de Linux, sin extensión, que ninguna regla ignoraba) y `mainOLD.c` (una copia de respaldo). | Se sacaron del repositorio y se agregaron `cwitter`, `*.log`, `bin/` y `obj/` al `.gitignore`. | `8670e77` |
-| 17 | `test_tweets.c` dejó de compilar. | En el Sprint 2 `tweetPublicar` pasó a recibir un `User *`, y el test le seguía pasando el nombre como texto. | Se reescribió el test con usuarios armados a mano (verificados y no verificados) y se sumaron los casos del feed ordenado y del recorrido. | `44948f1` (agussrico, 10/10) |
-| 18 | Dos tweets publicados en el mismo segundo quedaban en orden invertido. | `time()` tiene resolución de un segundo: si la fecha era igual, el comparador dejaba primero al más viejo. | Se agregó un desempate por id: el de id más alto es el más nuevo. | `77d01da` (agussrico, 10/10) |
-| 19 | Los reportes correctos se tomaban como error. | La documentación de FameCheck dice que el reporte responde 201, pero el servicio responde 204 (sin body). | `famecheckReportarPublicacion` considera éxito el 204. Quedó anotado en el código. | `31d686e` (LagooFran, 8/10) |
-| 20 | `tweetsAbrir` devolvía `TODO_OK` cuando no existía el archivo, a diferencia de `usersAbrir`. | Se encontró al completar la columna "Salida obtenida" de la hoja de tests: el caso esperaba `ERROR_AP_ARCH`. | Ahora devuelve `ERROR_AP_ARCH`, igual que `usersAbrir`. `main` no usa ese valor, así que no cambia el comportamiento del programa. | `6f73401` (agussrico, 10/10) |
+| 15 | Había un ejecutable y un archivo viejo de `main` en el repositorio. | Se subieron `cwitter` (el binario de Linux, sin extensión, que ninguna regla ignoraba) y `mainOLD.c` (una copia de respaldo). | Se sacaron del repositorio y se agregaron `cwitter`, `*.log`, `bin/` y `obj/` al `.gitignore`. | `8670e77` |
+| 16 | `test_tweets.c` dejó de compilar. | En el Sprint 2 `tweetPublicar` pasó a recibir un `User *`, y el test le seguía pasando el nombre como texto. | Se reescribió el test con usuarios armados a mano (verificados y no verificados) y se sumaron los casos del feed ordenado y del recorrido. | `44948f1` (agussrico, 10/10) |
+| 17 | Dos tweets publicados en el mismo segundo quedaban en orden invertido. | `time()` tiene resolución de un segundo: si la fecha era igual, el comparador dejaba primero al más viejo. | Se agregó un desempate por id: el de id más alto es el más nuevo. | `77d01da` (agussrico, 10/10) |
+| 18 | Los reportes correctos se tomaban como error. | La documentación de FameCheck dice que el reporte responde 201, pero el servicio responde 204 (sin body). | `famecheckReportarPublicacion` considera éxito el 204. Quedó anotado en el código. | `31d686e` (LagooFran, 8/10) |
+| 19 | `tweetsAbrir` devolvía `TODO_OK` cuando no existía el archivo, a diferencia de `usersAbrir`. | Se encontró al completar la columna "Salida obtenida" de la hoja de tests: el caso esperaba `ERROR_AP_ARCH`. | Ahora devuelve `ERROR_AP_ARCH`, igual que `usersAbrir`. `main` no usa ese valor, así que no cambia el comportamiento del programa. | `6f73401` (agussrico, 10/10) |
 
 ## 4. Contribuciones visibles en el historial
 
@@ -552,7 +551,7 @@ También la usamos para armar la documentación del trabajo: la descripción del
 
 - Le pasamos el código, los archivos de datos, el historial de commits y las consignas.
 - A partir de eso, la IA armó borradores de cada sección, con el formato que pide la consigna (por ejemplo, para cada decisión: problema, alternativas, qué elegimos, por qué, qué observamos y si cambió).
-- En el Sprint 2, para completar la columna "Salida obtenida" de la hoja de tests, ejecutó los tres programas de prueba y copió la salida real. Así apareció que `tweetsAbrir` no devolvía lo que esperaba el caso del Sprint 1 (problema 20).
+- En el Sprint 2, para completar la columna "Salida obtenida" de la hoja de tests, ejecutó los tres programas de prueba y copió la salida real. Así apareció que `tweetsAbrir` no devolvía lo que esperaba el caso del Sprint 1 (problema 19).
 - Lo que no se podía saber leyendo el código (los motivos, las alternativas que discutimos, cómo detectamos cada problema, los planteos individuales) quedó marcado como pendiente para que lo completemos nosotros, en lugar de inventarlo.
 - Cada sección la revisamos y ajustamos entre todos antes de incorporarla, porque la defensa individual exige poder explicar cualquier punto de la bitácora.
 
