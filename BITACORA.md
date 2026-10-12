@@ -148,7 +148,7 @@ En Linux (`linux=true`) los menús usan colores con códigos de escape ANSI; en 
 
 **Eliminar (`tweetEliminar`).** Mismas validaciones que modificar; si pasan, elimina el nodo de la lista.
 
-**Feed (`tweetsMostrarFeed`).** Recorre la lista completa e imprime los tweets de todos los usuarios. Como la lista se mantiene ordenada (`cmpTweetFeed`), aparecen primero los tweets de cuentas verificadas y después el resto; dentro de cada grupo, del más reciente al más viejo. Si dos tweets tienen la misma fecha (mismo segundo), va primero el de id más alto.
+**Feed (`tweetsMostrarFeed`).** Recorre la lista completa e imprime los tweets de todos los usuarios. Como la lista se mantiene ordenada (`cmpTweetFeed`), aparecen primero los tweets de cuentas verificadas y después el resto; dentro de cada grupo, del más reciente al más viejo. Si dos tweets tienen la misma fecha (mismo segundo), va primero el de id más alto. Cada tweet se imprime con su fecha y hora de publicación, y los de cuentas verificadas llevan la marca `[V]`.
 
 **Recorrido de a un tweet (nuevo).** En el menú con sesión se ve un tweet por vez. `D` pasa al siguiente (`nodo->sig`) y `A` vuelve al anterior (`nodo->ant`), sin recorrer el feed desde el principio. En los extremos no se mueve. Después de publicar o eliminar, el recorrido vuelve al primer tweet.
 
@@ -240,7 +240,8 @@ Los códigos de FameCheck son negativos para no confundirse con los del resto de
 | 8/10 | LagooFran y agussrico | Reporte de tweets a FameCheck, top 5 de verificados con `listaInsertarOrdenado` y `listaEliminarUltimo`, `tweetPublicar` pasa a recibir el `User`, menús nuevos con colores y recorrido del feed con A/D (`31d686e`). |
 | 10/10 | agussrico | Se corrige el orden del top 5 y curl pasa a iniciarse una sola vez (`7461930`). Se agregan famecheck, cJSON y curl al proyecto de Code::Blocks (`748ada8`). |
 | 10/10 | agussrico | Log de fallos al reportar tweets (`5986abd`, rama `feature/logs`). Se corrige el `.gitignore` y se sacan del repo la clave, el binario y `mainOLD.c` (`8670e77`). Se agrega `test_famecheck.c` (`06cf809`). |
-| 10/10 | agussrico | Feed con verificados primero y después por fecha (`77d01da`, rama `feature/feed`) y actualización de `test_tweets.c` (`44948f1`). `tweetsAbrir` pasa a devolver `ERROR_AP_ARCH` sin archivo. Hoja de tests y bitácora del Sprint 2. |
+| 10/10 | agussrico | Feed con verificados primero y después por fecha (`77d01da`, rama `feature/feed`) y actualización de `test_tweets.c` (`44948f1`). `tweetsAbrir` pasa a devolver `ERROR_AP_ARCH` sin archivo. Bitácora del Sprint 2. |
+| 11/10 | mateofeiertag | Hoja de tests del Sprint 2 (`4738645`). Nuevo formato de los tweets en consola: cada tweet muestra la fecha y hora de publicación y la marca `[V]` si el autor está verificado (`f980911`). |
 
 ## 2. Decisiones de diseño
 
@@ -415,9 +416,9 @@ En el Sprint 2 se siguió el mismo criterio: todo lo que habla con el servicio e
 
 | Integrante | Trabajo visible en los commits |
 |------------|--------------------------------|
-| agussrico | **Sprint 1:** diseño inicial (`cwitter.h`), corrección de la lista, librería/registro/login/persistencia de usuarios y sus tests, inicialización de structs y copia con límite, documentación. **Sprint 2:** coautoría del reporte y el top 5, corrección del top 5 y del inicio de curl, log de fallos, limpieza del repositorio, feed ordenado, `test_famecheck.c`, adaptación de `test_tweets.c`, hoja de tests y bitácora. |
+| agussrico | **Sprint 1:** diseño inicial (`cwitter.h`), corrección de la lista, librería/registro/login/persistencia de usuarios y sus tests, inicialización de structs y copia con límite, documentación. **Sprint 2:** coautoría del reporte y el top 5, corrección del top 5 y del inicio de curl, log de fallos, limpieza del repositorio, feed ordenado, `test_famecheck.c`, adaptación de `test_tweets.c` y bitácora. |
 | LagooFran | **Sprint 1:** lista genérica, configuración del IDE, menús de inicio de sesión y registro, soporte multisistema (`config.ini`) y limpieza de la lista (`listaLlena`, `LISTA_VACIA`). **Sprint 2:** integración con curl y cJSON, verificación de usuarios, reporte de tweets, top 5 (`listaInsertarOrdenado`, `listaEliminarUltimo`), menús nuevos con colores y recorrido del feed con A/D. |
-| mateofeiertag | **Sprint 1:** integración de tweets y feed en `main`, tests de tweets. |
+| mateofeiertag | **Sprint 1:** integración de tweets y feed en `main`, tests de tweets. **Sprint 2:** hoja de tests y formato de los tweets en consola (fecha y marca de verificado). |
 | Garbaaa | **Sprint 1:** corrección de búsqueda, permisos de modificar/eliminar. |
 
 ## 5. Planteos individuales previos
