@@ -1,8 +1,6 @@
 #include "tweet.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+
 
 // Variable global est�tica para autoincrementar el ID de los tweets durante la ejecuci�n
 static unsigned int ultimo_id = 0;
@@ -28,28 +26,80 @@ int cmpTweetTexto(void *a, void *b) {
     return 0; // No encontrado
 }
 
+int cmpTweetFeed(void *a, void *b)
+{
+    Tweet *t1 = (Tweet *)a;
+    Tweet *t2 = (Tweet *)b;
+
+    if(t1->verificado != t2->verificado)
+        return t2->verificado - t1->verificado; /*se muestra primero el verificado*/
+
+    if(t1->fecha != t2->fecha)
+        return t1->fecha > t2->fecha ? -1 : 1;/*si ambos estan verificados/no verificados, se muestra por fecha*/
+
+    return t1->id > t2->id ? -1 : 1; // mismo segundo: el de id mas alto es el mas nuevo
+}
+
 void tweetImprimir(void *dato) {
     Tweet *t = (Tweet *)dato;
-    printf("\n[ID: %u] @%s dijo:\n%s\n", t->id, t->autor, t->mensaje);
+
+    struct tm *tm_info = localtime(&t->fecha);
+    char fechaStr[20];
+    strftime(fechaStr, sizeof(fechaStr), "%d/%m/%Y %H:%M:%S", tm_info);
+
+    printf("\n[ID: %u] [%s] @%s", t->id, fechaStr, t->autor);
+
+    if (t->verificado == 1) {
+        printf(" [V]");
+    }
+
+    printf(" dijo:\n%s\n", t->mensaje);
     printf("----------------------------------------\n");
 }
 
 
-int tweetPublicar(tLista *feed, char *autor, char *mensaje) {
-
+int tweetPublicar(tLista *feed, User *autor, char *mensaje) {
+    //Se modifico esta funcion para que cuando se ingrese la funcion reciba el USER y no solo su nombre
+    //De esta manera se chequea si esta verificado y se evitan consultas de mas a la API
     Tweet nuevoTweet;
     memset(&nuevoTweet, 0, sizeof(Tweet));
 
     ultimo_id++;
     nuevoTweet.id = ultimo_id;
+    nuevoTweet.fecha = time(NULL);
 
-    strncpy(nuevoTweet.autor, autor, sizeof(nuevoTweet.autor) - 1);
+    nuevoTweet.reportadoAFamecheck = 0;
+
+    strncpy(nuevoTweet.autor, autor->user, sizeof(nuevoTweet.autor) - 1);
     nuevoTweet.autor[sizeof(nuevoTweet.autor) - 1] = '\0';
+    nuevoTweet.verificado = autor->verficado;
 
     strncpy(nuevoTweet.mensaje, mensaje, MAX_TWEET);
     nuevoTweet.mensaje[MAX_TWEET] = '\0';
 
-    return listaInsertar(feed, &nuevoTweet, sizeof(Tweet));
+
+    // LOGICA FAMECHECK SUMADA A TWEET----
+        if(autor->verficado == 1){
+        printf("Reportando Tweet en FameCheck...\n");
+        int reporte = famecheckReportarPublicacion(autor->user, mensaje, &nuevoTweet.reportadoAFamecheck);
+
+        if(reporte == FAMECHECK_OK){
+            printf("[!] Tweet reportado correctamente [!]\n");
+        }
+        else{
+            printf("Error al Reportar el tweet a FameCheck\n");
+            switch(reporte){
+                case FAMECHECK_ERROR_RED:       famecheckRegistrarLog(autor->user, nuevoTweet.id, "FAMECHECK_ERROR_RED"); break;
+                case FAMECHECK_ERROR_RESPUESTA: famecheckRegistrarLog(autor->user, nuevoTweet.id, "FAMECHECK_ERROR_RESPUESTA"); break;
+                case FAMECHECK_ERROR_MEMORIA:   famecheckRegistrarLog(autor->user, nuevoTweet.id, "FAMECHECK_ERROR_MEMORIA"); break;
+                case FAMECHECK_ERROR_CONFIG:    famecheckRegistrarLog(autor->user, nuevoTweet.id, "FAMECHECK_ERROR_CONFIG"); break;
+                default:                        famecheckRegistrarLog(autor->user, nuevoTweet.id, "ERROR_DESCONOCIDO");
+            }
+        }
+    }
+    // LOGICA FAMECHECK SUMADA A TWEET----
+
+    return listaInsertarOrdenado(feed,&nuevoTweet,sizeof(Tweet),cmpTweetFeed);
 }
 
 int tweetModificar(tLista *feed, unsigned int id, char *nuevoMensaje, char *autor) {
@@ -90,13 +140,13 @@ int tweetsAbrir(tLista *feed) {
     FILE *pf = fopen(ARCH_TWEETS, "rb");
 
     if (pf == NULL) {
-        return TODO_OK;
+        return ERROR_AP_ARCH;
     }
 
     Tweet aux;
     while (fread(&aux, sizeof(Tweet), 1, pf) == 1) {
 
-        listaInsertar(feed, &aux, sizeof(Tweet));
+        listaInsertarOrdenado(feed, &aux, sizeof(Tweet), cmpTweetFeed);
 
         if (aux.id > ultimo_id) {
             ultimo_id = aux.id;

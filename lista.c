@@ -136,3 +136,61 @@ void listaVaciar(tLista *lista){
     lista->cant = 0;
 
 }
+
+int listaInsertarOrdenado(tLista *lista, void *data, size_t dataSize, int (*cmp)(void *, void *)){
+    tNodo *nuevoNodo;
+    tNodo *actual;
+    if(listaLlena(dataSize)){
+        return LISTA_LLENA;
+    }
+    //alojo memoria para el nuevo nodo
+    nuevoNodo = (tNodo *)malloc(sizeof(tNodo));
+    nuevoNodo->data = malloc(dataSize);
+    memcpy(nuevoNodo->data, data, dataSize);
+    nuevoNodo->dataSize = dataSize;
+
+    ///recorro la lista hasta llegar a donde deberia insertar usando cmp
+    actual = lista->inicio;
+    while(actual != NULL && cmp(data, actual->data) > 0){
+        actual = actual->sig;
+    }
+
+    if(actual == NULL){ //si nodo actual es null va al final o esta vacia
+        nuevoNodo->sig = NULL;
+        nuevoNodo->ant = lista->fin;
+        if(lista->fin != NULL){
+            lista->fin->sig = nuevoNodo;
+        } else {
+            lista->inicio = nuevoNodo;
+        }
+        lista->fin = nuevoNodo;
+    } else { //meto el nodo entre los dos nodos que deberia quedar
+        nuevoNodo->sig = actual;
+        nuevoNodo->ant = actual->ant;
+        if(actual->ant != NULL){
+            actual->ant->sig = nuevoNodo;
+        } else {
+            lista->inicio = nuevoNodo;
+        }
+        actual->ant = nuevoNodo;
+    }
+    lista->cant++;
+    return TODO_OK;
+}
+
+void listaEliminarUltimo(tLista *lista){
+    tNodo *ultimo = lista->fin;
+    if(ultimo == NULL){
+        return;
+    }
+    if(ultimo->ant != NULL){
+        ultimo->ant->sig = NULL;
+        lista->fin = ultimo->ant;
+    } else {
+        lista->inicio = NULL;
+        lista->fin = NULL;
+    }
+    free(ultimo->data);
+    free(ultimo);
+    lista->cant--;
+}
