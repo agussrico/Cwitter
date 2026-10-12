@@ -213,7 +213,7 @@ void mostrarTweetActual(tNodo *nodo, int posicion, int total)
         printf("\n");
         return;
     }
-    sprintf(indicador, "%c  Tweet %d de %d  %c", (nodo->sig != NULL) ? '<' : ' ', posicion, total, (nodo->ant != NULL) ? '>' : ' ');
+    sprintf(indicador, "%c  Tweet %d de %d  %c", (nodo->ant != NULL) ? '<' : ' ', posicion, total, (nodo->sig != NULL) ? '>' : ' ');
     color(NEGRITA);
     color(CIAN);
     mostrarCentrado(indicador);
@@ -309,7 +309,7 @@ int main()
         mostrarMensaje(VERDE, "\n  >> Sesion iniciada. Bienvenido, ");
         printf("%s", pUsuarioActual->user);
         mostrarMensaje(VERDE, "! <<\n\n");
-        nodoTweet = listaTweets.fin;
+        nodoTweet = listaTweets.inicio;
         posTweet = (nodoTweet != NULL) ? 1 : 0;
 
         //break; ///aca iria el menu principal de twitter con el usuario iniciado
@@ -342,16 +342,16 @@ int main()
             switch(opcMenu) {
                 case 'a':
                 case 'A':
-                    if(nodoTweet != NULL && nodoTweet->sig != NULL){
-                        nodoTweet = nodoTweet->sig;
+                    if(nodoTweet != NULL && nodoTweet->ant != NULL){
+                        nodoTweet = nodoTweet->ant;
                         posTweet--;
                     }
                     continue;
 
                 case 'd':
                 case 'D':
-                    if(nodoTweet != NULL && nodoTweet->ant != NULL){
-                        nodoTweet = nodoTweet->ant;
+                    if(nodoTweet != NULL && nodoTweet->sig != NULL){
+                        nodoTweet = nodoTweet->sig;
                         posTweet++;
                     }
                     continue;
@@ -369,10 +369,9 @@ int main()
                     tweetPublicar(&listaTweets, pUsuarioActual, bufferMensaje);
                     mostrarMensaje(VERDE, "\n  [!] Tweet publicado con exito.\n");
                     if(nodoTweet == NULL){
-                        nodoTweet = listaTweets.fin;
+                        nodoTweet = listaTweets.inicio;
                         posTweet = (nodoTweet != NULL) ? 1 : 0;
                     }
-                    nodoTweet = listaTweets.fin;
 
                     break;
 
@@ -417,7 +416,7 @@ int main()
                     else
                         mostrarMensaje(ROJO, "\n  [!] No se encontro el tweet.\n");
                     if (resultado == TODO_OK){
-                        nodoTweet = listaTweets.fin;
+                        nodoTweet = listaTweets.inicio;
                         posTweet = (nodoTweet != NULL) ? 1 : 0;
                     }
                     break;

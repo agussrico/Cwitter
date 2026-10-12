@@ -28,35 +28,17 @@ int cmpTweetTexto(void *a, void *b) {
 
 void tweetImprimir(void *dato) {
     Tweet *t = (Tweet *)dato;
-    char strFecha[20];
-    struct tm *infoTiempo = localtime(&(t->fechaHora));
-    strftime(strFecha, sizeof(strFecha), "%d/%m/%Y %H:%M", infoTiempo);
     printf("\n[ID: %u] @%s dijo:\n%s\n", t->id, t->autor, t->mensaje);
-    printf("\nFecha: %s\n",strFecha);
     printf("----------------------------------------\n");
 }
 
-int compararTweets(void *a, void *b) {
-    Tweet *nuevo = (Tweet *)a;
-    Tweet *actual = (Tweet *)b;
-
-    /* Único caso donde frena antes del final:
-       el nuevo es verificado (1) y chocó contra el primer NO verificado (0) */
-    if (nuevo->reportadoAFamecheck == 0 && actual->reportadoAFamecheck == 1) {
-        return -1;
-    }
-
-    /* En cualquier otro caso devuelve 1 para que el while siga avanzando
-       e inserte al final de su bloque, igual que hacía listaInsertar */
-    return 1;
-}
 
 int tweetPublicar(tLista *feed, User *autor, char *mensaje) {
-    //Se modifico esta funcion para que cuando se ingrese la funcion reciba el USER y no solo su nombre
+    //Se modifico esta funcion para que cuando se ingrese la funcion reciba el USER y no solo su nombre 
     //De esta manera se chequea si esta verificado y se evitan consultas de mas a la API
     Tweet nuevoTweet;
     memset(&nuevoTweet, 0, sizeof(Tweet));
-
+    
     ultimo_id++;
     nuevoTweet.id = ultimo_id;
 
@@ -68,7 +50,6 @@ int tweetPublicar(tLista *feed, User *autor, char *mensaje) {
     strncpy(nuevoTweet.mensaje, mensaje, MAX_TWEET);
     nuevoTweet.mensaje[MAX_TWEET] = '\0';
 
-    nuevoTweet.fechaHora = time(NULL);
 
     // LOGICA FAMECHECK SUMADA A TWEET----
     if(autor->verficado == 1){
@@ -82,7 +63,7 @@ int tweetPublicar(tLista *feed, User *autor, char *mensaje) {
     }
     // LOGICA FAMECHECK SUMADA A TWEET----
 
-    return listaInsertarOrdenado(feed, &nuevoTweet, sizeof(Tweet),compararTweets);
+    return listaInsertar(feed, &nuevoTweet, sizeof(Tweet));
 }
 
 int tweetModificar(tLista *feed, unsigned int id, char *nuevoMensaje, char *autor) {
