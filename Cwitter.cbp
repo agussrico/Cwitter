@@ -30,7 +30,20 @@
 		</Build>
 		<Compiler>
 			<Add option="-Wall" />
+			<Add directory="C:/libs/curl/include" />
 		</Compiler>
+		<Linker>
+			<Add library="curl" />
+			<Add directory="C:/libs/curl/lib" />
+		</Linker>
+		<Unit filename="cJSON.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cJSON.h" />
+		<Unit filename="famecheck.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="famecheck.h" />
 		<Unit filename="lista.c">
 			<Option compilerVar="CC" />
 		</Unit>

@@ -30,6 +30,8 @@ tNodo *listaBuscarYDevolver(tLista *lista, void *busqueda, int (*cmp)(void *, vo
 void listaRecorrerYAccion(tLista *lista, void (*accion)(void *));
 int listaEliminarNodo(tLista *lista, void *busqueda, int (*cmp)(void *, void*));
 void listaVaciar(tLista *lista);
+int listaInsertarOrdenado(tLista *, void *, size_t , int (*cmp)(void *, void *));
+void listaEliminarUltimo(tLista *);
 
 
 #endif // LISTA_H_INCLUDED
