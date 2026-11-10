@@ -3,7 +3,7 @@
 #include "arbol.h"
 #include "lista.h"
 
-#define MAX_PALABRA 141 // un tweet de una sola palabra puede ocupar los 140 caracteres mas el /0
+#define MAX_PALABRA 281 // un tweet de una sola palabra puede ocupar los 280 caracteres mas el /0
 #define SEPARADORES " \t\n.,;:!?\"'()[]{}-" // caracteres que separan las palabras de un texto
 #define INDICE_ERROR -1 // no hay memoria para seguir indexando
 

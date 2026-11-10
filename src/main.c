@@ -441,8 +441,10 @@ int main()
                     fgets(bufferMensaje, sizeof(bufferMensaje), stdin);
                     bufferMensaje[strcspn(bufferMensaje, "\n")] = 0;
 
-                    tweetPublicar(&listaTweets, pUsuarioActual, bufferMensaje, tweetDestino->id);
-                    mostrarMensaje(VERDE, "\n  [!] Respuesta publicada con exito en el hilo.\n");
+                    if (tweetPublicarConIndice(&listaTweets, &indiceTweets, pUsuarioActual, bufferMensaje, tweetDestino->id) == TODO_OK)
+                        mostrarMensaje(VERDE, "\n  [!] Respuesta publicada con exito en el hilo.\n");
+                    else
+                        mostrarMensaje(ROJO, "\n  [!] No se pudo publicar la respuesta.\n");
                     break;
 
                 case 'v':
@@ -488,8 +490,10 @@ int main()
                         fgets(bufferMensaje, sizeof(bufferMensaje), stdin);
                         bufferMensaje[strcspn(bufferMensaje, "\n")] = 0;
 
-                        tweetPublicar(&listaTweets, pUsuarioActual, bufferMensaje, idDestino);
-                        mostrarMensaje(VERDE, "\n  [!] Respuesta publicada con exito en el hilo.\n");
+                        if (tweetPublicarConIndice(&listaTweets, &indiceTweets, pUsuarioActual, bufferMensaje, idDestino) == TODO_OK)
+                            mostrarMensaje(VERDE, "\n  [!] Respuesta publicada con exito en el hilo.\n");
+                        else
+                            mostrarMensaje(ROJO, "\n  [!] No se encontro un tweet con ese ID.\n");
                     }
                     break;
 
@@ -503,7 +507,7 @@ int main()
                     if (modoTest) {
                         printf("\n  [TEST] Comparaciones con indice: %lu (palabras en el arbol: %d, altura: %d)\n",
                                indiceComparacionesUltimaBusqueda(), indiceTweets.arbol.cant, arbolAltura(&indiceTweets.arbol));
-                        printf("  [TEST] Comparaciones sin indice: %d (un strstr por cada tweet del feed)\n", listaTweets.cant);
+                        printf("  [TEST] Comparaciones sin indice: %d (un strstr por cada tweet y respuesta)\n", indiceTweets.cantRegistros);
                     }
                     break;
 

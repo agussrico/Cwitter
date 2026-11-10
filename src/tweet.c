@@ -275,24 +275,73 @@ void tweetBuscarYMostrar(tLista *feed, char *textoBuscado) {
 
 // ================== VERSIONES CON INDICE ==================
 
-int tweetsAbrirConIndice(tLista *feed, tIndice *indice) {
-    // Carga el feed con la funcion original y despues indexa cada tweet recorriendo la lista una sola vez
-    int resultado = tweetsAbrir(feed);
-    if (resultado != TODO_OK) {
-        return resultado;
-    }
+// Busca el nodo de un tweet en el feed y en todos los hilos. Si contenedor no es NULL,
+// devuelve ahi la lista donde esta el nodo (el feed o el hilo del tweet padre)
+static tNodo *tweetBuscarNodoPorId(tLista *lista, unsigned int id, tLista **contenedor) {
 
-    tNodo *actual = feed->inicio;
+    tNodo *actual = lista->inicio;
+
     while (actual != NULL) {
-        if (indiceCargar(indice, actual, ((Tweet *)actual->data)->mensaje) == INDICE_ERROR) {
-            return INDICE_ERROR;
+        Tweet *t = (Tweet *)actual->data;
+        if (t->id == id) {
+            if (contenedor != NULL)
+                *contenedor = lista;
+            return actual;
         }
+
+        tNodo *encontradoEnHilo = tweetBuscarNodoPorId(&t->hilo, id, contenedor);
+        if (encontradoEnHilo != NULL)
+            return encontradoEnHilo;
+
+        actual = actual->sig;
+    }
+    return NULL;
+}
+
+// Indexa todos los tweets de una lista y, recursivamente, sus respuestas
+static int tweetIndexarLista(tIndice *indice, tLista *lista) {
+
+    tNodo *actual = lista->inicio;
+
+    while (actual != NULL) {
+        Tweet *t = (Tweet *)actual->data;
+        if (indiceCargar(indice, actual, t->mensaje) == INDICE_ERROR)
+            return INDICE_ERROR;
+        if (tweetIndexarLista(indice, &t->hilo) == INDICE_ERROR)
+            return INDICE_ERROR;
         actual = actual->sig;
     }
     return TODO_OK;
 }
 
+// Saca del indice todos los tweets de una lista y, recursivamente, sus respuestas
+static void tweetDesindexarLista(tIndice *indice, tLista *lista) {
+
+    tNodo *actual = lista->inicio;
+
+    while (actual != NULL) {
+        Tweet *t = (Tweet *)actual->data;
+        tweetDesindexarLista(indice, &t->hilo);
+        indiceQuitar(indice, actual, t->mensaje);
+        actual = actual->sig;
+    }
+}
+
+int tweetsAbrirConIndice(tLista *feed, tIndice *indice) {
+    // Carga el feed y los hilos con la funcion original y despues indexa todos los tweets
+    int resultado = tweetsAbrir(feed);
+    if (resultado != TODO_OK) {
+        return resultado;
+    }
+    return tweetIndexarLista(indice, feed);
+}
+
 int tweetPublicarConIndice(tLista *feed, tIndice *indice, User *autor, char *mensaje, unsigned int idPadre) {
+    // Si es una respuesta, el tweet padre tiene que existir
+    if (idPadre != 0 && tweetBuscarPorId(feed, idPadre) == NULL) {
+        return NODO_NO_ENCONTRADO;
+    }
+
     // Publica con la funcion original (incluye el reporte a FameCheck) y despues indexa el tweet nuevo
     int resultado = tweetPublicar(feed, autor, mensaje, idPadre);
     if (resultado != TODO_OK) {
@@ -300,8 +349,7 @@ int tweetPublicarConIndice(tLista *feed, tIndice *indice, User *autor, char *men
     }
 
     // listaInsertarOrdenado no devuelve el nodo: lo busco por id (el tweet nuevo tiene el ultimo id)
-    unsigned int id = ultimo_id;
-    tNodo *nodo = listaBuscarYDevolver(feed, &id, cmpTweetId);
+    tNodo *nodo = tweetBuscarNodoPorId(feed, ultimo_id, NULL);
     if (nodo == NULL) {
         return NODO_NO_ENCONTRADO;
     }
@@ -314,7 +362,7 @@ int tweetPublicarConIndice(tLista *feed, tIndice *indice, User *autor, char *men
 
 int tweetModificarConIndice(tLista *feed, tIndice *indice, unsigned int id, char *nuevoMensaje, char *autor) {
 
-    tNodo *nodo = listaBuscarYDevolver(feed, &id, cmpTweetId);
+    tNodo *nodo = tweetBuscarNodoPorId(feed, id, NULL);
 
     if (nodo == NULL)
         return NODO_NO_ENCONTRADO;
@@ -338,7 +386,8 @@ int tweetModificarConIndice(tLista *feed, tIndice *indice, unsigned int id, char
 
 int tweetEliminarConIndice(tLista *feed, tIndice *indice, unsigned int id, char *autor) {
 
-    tNodo *nodo = listaBuscarYDevolver(feed, &id, cmpTweetId);
+    tLista *contenedor;
+    tNodo *nodo = tweetBuscarNodoPorId(feed, id, &contenedor);
 
     if (nodo == NULL)
         return NODO_NO_ENCONTRADO;
@@ -348,10 +397,12 @@ int tweetEliminarConIndice(tLista *feed, tIndice *indice, unsigned int id, char 
     if (strcmp(t->autor, autor) != 0)
         return SIN_PERMISO;
 
-    // Primero se saca del indice: despues de listaEliminarNodo el nodo ya esta liberado
+    // Primero se saca del indice el tweet y todas sus respuestas: despues se liberan
+    tweetDesindexarLista(indice, &t->hilo);
     indiceQuitar(indice, nodo, t->mensaje);
 
-    return listaEliminarNodo(feed, &id, cmpTweetId);
+    tweetVaciarHilo(&t->hilo);
+    return listaEliminarNodo(contenedor, &id, cmpTweetId);
 }
 
 void tweetBuscarYMostrarConIndice(tIndice *indice, char *textoBuscado) {
@@ -371,11 +422,13 @@ void tweetBuscarYMostrarConIndice(tIndice *indice, char *textoBuscado) {
         return;
     }
 
-    // Cada elemento de la lista es un tNodo* que apunta al nodo del tweet en el feed
+    // Cada elemento de la lista es un tNodo* que apunta al nodo del tweet (en el feed o en un hilo)
     tNodo *actual = resultados->inicio;
     while (actual != NULL) {
-        tNodo *nodoTweet = *(tNodo **)actual->data;
-        tweetImprimir(nodoTweet->data);
+        Tweet *t = (Tweet *)(*(tNodo **)actual->data)->data;
+        if (t->idPadre != 0)
+            printf("\n(respuesta al tweet ID: %u)", t->idPadre);
+        tweetImprimir(t);
         actual = actual->sig;
     }
 }

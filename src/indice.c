@@ -8,6 +8,7 @@ static void normalizar(char *destino, const char *origen);
 static int indexarPalabra(tIndice *indice, const char *palabra, tNodo *nodo);
 static void desindexarPalabra(tIndice *indice, const char *palabra, tNodo *nodo);
 static int cmpNodo(void *busqueda, void *data);
+static char *copiarTexto(const char *texto);
 
 ///contador de comparaciones de palabras, para el modo test (se reinicia en cada indiceBuscar)
 static unsigned long comparaciones = 0;
@@ -20,19 +21,23 @@ void indiceInicializar(tIndice *indice){
 int indiceCargar(tIndice *indice, tNodo *nodo, const char *texto){
     ///Separa el texto en palabras y asocia el nodo a cada una
     ///devuelve la cantidad de registros indexados, o INDICE_ERROR si no hay memoria
-    char copia[MAX_PALABRA];
+    char *copia;
     char *palabra;
 
-    strncpy(copia, texto, MAX_PALABRA - 1); ///strtok modifica el texto, trabajo sobre una copia
-    copia[MAX_PALABRA - 1] = '\0';
+    copia = copiarTexto(texto); ///strtok modifica el texto, trabajo sobre una copia
+    if(copia == NULL){
+        return INDICE_ERROR;
+    }
 
     palabra = strtok(copia, SEPARADORES);
     while(palabra != NULL){
         if(indexarPalabra(indice, palabra, nodo) != TODO_OK){
+            free(copia);
             return INDICE_ERROR;
         }
         palabra = strtok(NULL, SEPARADORES);
     }
+    free(copia);
 
     indice->cantRegistros++;
     return indice->cantRegistros;
@@ -41,18 +46,21 @@ int indiceCargar(tIndice *indice, tNodo *nodo, const char *texto){
 int indiceQuitar(tIndice *indice, tNodo *nodo, const char *texto){
     ///Saca el nodo de la lista de cada palabra del texto. Si una lista queda vacia, borra la palabra del arbol
     ///texto tiene que ser el mismo con el que se cargo (al modificar, llamar antes de cambiar el mensaje)
-    ///devuelve la cantidad de registros indexados que quedan
-    char copia[MAX_PALABRA];
+    ///devuelve la cantidad de registros indexados que quedan, o INDICE_ERROR si no hay memoria
+    char *copia;
     char *palabra;
 
-    strncpy(copia, texto, MAX_PALABRA - 1);
-    copia[MAX_PALABRA - 1] = '\0';
+    copia = copiarTexto(texto);
+    if(copia == NULL){
+        return INDICE_ERROR;
+    }
 
     palabra = strtok(copia, SEPARADORES);
     while(palabra != NULL){
         desindexarPalabra(indice, palabra, nodo);
         palabra = strtok(NULL, SEPARADORES);
     }
+    free(copia);
 
     if(indice->cantRegistros > 0){
         indice->cantRegistros--;
@@ -131,6 +139,15 @@ static void desindexarPalabra(tIndice *indice, const char *palabra, tNodo *nodo)
 static int cmpNodo(void *busqueda, void *data){
     ///compara direcciones: la lista guarda tNodo* y se busca un tNodo* (formato de cmp de lista: 1 si coincide)
     return *(tNodo **)busqueda == *(tNodo **)data;
+}
+
+static char *copiarTexto(const char *texto){
+    ///copia del texto en memoria dinamica, del largo justo (sirve para cualquier largo de tweet)
+    char *copia = (char *)malloc(strlen(texto) + 1);
+    if(copia != NULL){
+        strcpy(copia, texto);
+    }
+    return copia;
 }
 
 static int cmpEntrada(void *a, void *b){
