@@ -250,6 +250,7 @@ int main()
 
     ///usuarios
     int opcion;
+    int resultadoRegistro;
     char user[20], pass[20];
     tLista listaUsuarios;
     listaInicializar(&listaUsuarios);
@@ -289,8 +290,13 @@ int main()
                 scanf("%19s", user);
                 mostrarPrompt("  Password: ");
                 scanf("%19s", pass);
-                userRegistrar(&listaUsuarios, user, pass);
-                ///faltaria control de errores usuario duplicado/no se pudo cargar.
+                resultadoRegistro = userRegistrar(&listaUsuarios, user, pass);
+                if(resultadoRegistro == TODO_OK)
+                    mostrarMensaje(VERDE, "\n  [!] Usuario registrado con exito.\n");
+                else if(resultadoRegistro == USER_DUPLICADO)
+                    mostrarMensaje(ROJO, "\n  [!] Ese usuario ya existe, elegi otro nombre.\n");
+                else
+                    mostrarMensaje(ROJO, "\n  [!] No se pudo registrar el usuario (sin memoria).\n");
                 printf("\n  Presione ENTER para continuar...");
                 getchar(); getchar();
             }
