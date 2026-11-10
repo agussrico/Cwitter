@@ -40,6 +40,7 @@ int cmpTweetFeed(void *a, void *b)
     return t1->id > t2->id ? -1 : 1; // mismo segundo: el de id mas alto es el mas nuevo
 }
 
+// agregar impresion hilo
 void tweetImprimir(void *dato) {
     Tweet *t = (Tweet *)dato;
 
@@ -54,11 +55,11 @@ void tweetImprimir(void *dato) {
     }
 
     printf(" dijo:\n%s\n", t->mensaje);
+    printf("Respuestas: %d\n", t->hilo.cant);
     printf("----------------------------------------\n");
 }
 
-
-int tweetPublicar(tLista *feed, User *autor, char *mensaje) {
+int tweetPublicar(tLista *feed, User *autor, char *mensaje, unsigned int idPadre) {
     //Se modifico esta funcion para que cuando se ingrese la funcion reciba el USER y no solo su nombre
     //De esta manera se chequea si esta verificado y se evitan consultas de mas a la API
     Tweet nuevoTweet;
@@ -66,6 +67,7 @@ int tweetPublicar(tLista *feed, User *autor, char *mensaje) {
 
     ultimo_id++;
     nuevoTweet.id = ultimo_id;
+    nuevoTweet.idPadre = idPadre;
     nuevoTweet.fecha = time(NULL);
 
     nuevoTweet.reportadoAFamecheck = 0;
@@ -77,9 +79,10 @@ int tweetPublicar(tLista *feed, User *autor, char *mensaje) {
     strncpy(nuevoTweet.mensaje, mensaje, MAX_TWEET);
     nuevoTweet.mensaje[MAX_TWEET] = '\0';
 
+    listaInicializar(&nuevoTweet.hilo);
 
     // LOGICA FAMECHECK SUMADA A TWEET----
-        if(autor->verficado == 1){
+    if(autor->verficado == 1){
         printf("Reportando Tweet en FameCheck...\n");
         int reporte = famecheckReportarPublicacion(autor->user, mensaje, &nuevoTweet.reportadoAFamecheck);
 
@@ -99,17 +102,19 @@ int tweetPublicar(tLista *feed, User *autor, char *mensaje) {
     }
     // LOGICA FAMECHECK SUMADA A TWEET----
 
-    return listaInsertarOrdenado(feed,&nuevoTweet,sizeof(Tweet),cmpTweetFeed);
+    if(idPadre == 0)
+        return listaInsertarOrdenado(feed,&nuevoTweet,sizeof(Tweet),cmpTweetFeed);
+
+    Tweet *padre = tweetBuscarPorId(feed,idPadre);
+    return listaInsertarOrdenado(&padre->hilo, &nuevoTweet, sizeof(Tweet),cmpTweetFeed);    
 }
 
 int tweetModificar(tLista *feed, unsigned int id, char *nuevoMensaje, char *autor) {
 
-    tNodo *nodo = listaBuscarYDevolver(feed, &id, cmpTweetId);
+    Tweet *t = tweetBuscarPorId(feed, id);
 
-    if (nodo == NULL)
+    if (t == NULL)
         return NODO_NO_ENCONTRADO;
-
-    Tweet *t = (Tweet *)nodo->data;
 
     if (strcmp(t->autor, autor) != 0)
         return SIN_PERMISO;
@@ -122,17 +127,62 @@ int tweetModificar(tLista *feed, unsigned int id, char *nuevoMensaje, char *auto
 
 int tweetEliminar(tLista *feed, unsigned int id, char *autor) {
 
-    tNodo *nodo = listaBuscarYDevolver(feed, &id, cmpTweetId);
+    Tweet *t = tweetBuscarPorId(feed, id);
 
-    if (nodo == NULL)
+    if (t == NULL)
         return NODO_NO_ENCONTRADO;
-
-    Tweet *t = (Tweet *)nodo->data;
-
+    
     if (strcmp(t->autor, autor) != 0)
         return SIN_PERMISO;
 
-    return listaEliminarNodo(feed, &id, cmpTweetId);
+    tLista *origen = feed;
+
+    if(t->idPadre != 0)
+    {
+        Tweet *tPadre = tweetBuscarPorId(feed,t->idPadre);
+        origen = &tPadre->hilo;
+    }
+
+    tweetVaciarHilo(&t->hilo);
+    
+    return listaEliminarNodo(origen, &id, cmpTweetId);
+}
+
+void tweetVaciarHilo(tLista *hilo)
+{
+    tNodo *nodo = hilo->inicio;
+    
+    while(nodo != NULL)
+    {
+        Tweet *t = (Tweet*)nodo->data;
+        tweetVaciarHilo(&t->hilo);
+        nodo = nodo->sig;
+    }
+
+    listaVaciar(hilo);
+}
+
+Tweet *tweetBuscarPorId(tLista *lista, unsigned int id)
+{
+    tNodo *actual = lista->inicio;
+
+    while (actual != NULL)
+    {
+        Tweet *t = (Tweet *)actual->data;
+        if (t->id == id) {
+            return t;
+        }
+
+        // Busco recursivamente en el hilo
+        Tweet *encontradoEnHilo = tweetBuscarPorId(&t->hilo, id);
+        if (encontradoEnHilo != NULL) {
+            return encontradoEnHilo;
+        }
+
+        actual = actual->sig;
+    }
+
+    return NULL;
 }
 
 int tweetsAbrir(tLista *feed) {
@@ -144,10 +194,21 @@ int tweetsAbrir(tLista *feed) {
     }
 
     Tweet aux;
-    while (fread(&aux, sizeof(Tweet), 1, pf) == 1) {
+    while (fread(&aux, sizeof(Tweet), 1, pf) == 1)
+    {
+        listaInicializar(&aux.hilo);
 
-        listaInsertarOrdenado(feed, &aux, sizeof(Tweet), cmpTweetFeed);
+        if (aux.idPadre == 0)
+        {
+            listaInsertarOrdenado(feed, &aux, sizeof(Tweet), cmpTweetFeed);
+        }
         
+        else
+        {
+            Tweet *padre = tweetBuscarPorId(feed, aux.idPadre);
+            listaInsertarOrdenado(&padre->hilo, &aux, sizeof(Tweet), cmpTweetFeed);
+        }
+
         if (aux.id > ultimo_id) {
             ultimo_id = aux.id;
         }
@@ -161,25 +222,31 @@ int tweetsGuardar(tLista *feed) {
 
     FILE *pf = fopen(ARCH_TWEETS, "wb");
     if (pf == NULL) {
-        return -1; // Error al intentar crear o abrir el archivo||crear macro?
+        return ERROR_AP_ARCH;
     }
 
-    tNodo *actual = feed->inicio;
-
-    while (actual != NULL) {
-        Tweet *t = (Tweet *)actual->data;
-        fwrite(t, sizeof(Tweet), 1, pf);
-        actual = actual->sig;
-    }
+    tweetGuardarHilo(pf,feed);
 
     fclose(pf);
     return TODO_OK;
 }
 
+void tweetGuardarHilo(FILE *pf, tLista *lista)
+{
+    tNodo *actual = lista->inicio;
+
+    while (actual != NULL)
+    {
+        Tweet *t = (Tweet *)actual->data;
+        fwrite(t, sizeof(Tweet), 1, pf);
+        tweetGuardarHilo(pf, &t->hilo);
+        actual = actual->sig;
+    }
+}
+
 void tweetsMostrarFeed(tLista *feed) {
 
     printf("\n========= FEED DE CWITTER =========\n");
-
 
     listaRecorrerYAccion(feed, tweetImprimir);
 
@@ -225,9 +292,9 @@ int tweetsAbrirConIndice(tLista *feed, tIndice *indice) {
     return TODO_OK;
 }
 
-int tweetPublicarConIndice(tLista *feed, tIndice *indice, User *autor, char *mensaje) {
+int tweetPublicarConIndice(tLista *feed, tIndice *indice, User *autor, char *mensaje, unsigned int idPadre) {
     // Publica con la funcion original (incluye el reporte a FameCheck) y despues indexa el tweet nuevo
-    int resultado = tweetPublicar(feed, autor, mensaje);
+    int resultado = tweetPublicar(feed, autor, mensaje, idPadre);
     if (resultado != TODO_OK) {
         return resultado;
     }
