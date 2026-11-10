@@ -147,7 +147,7 @@ int tweetsAbrir(tLista *feed) {
     while (fread(&aux, sizeof(Tweet), 1, pf) == 1) {
 
         listaInsertarOrdenado(feed, &aux, sizeof(Tweet), cmpTweetFeed);
-
+        
         if (aux.id > ultimo_id) {
             ultimo_id = aux.id;
         }
@@ -203,5 +203,112 @@ void tweetBuscarYMostrar(tLista *feed, char *textoBuscado) {
 
     if (encontrados == 0) {
         printf("No se encontraron tweets que contengan esa palabra.\n");
+    }
+}
+
+// ================== VERSIONES CON INDICE ==================
+
+int tweetsAbrirConIndice(tLista *feed, tIndice *indice) {
+    // Carga el feed con la funcion original y despues indexa cada tweet recorriendo la lista una sola vez
+    int resultado = tweetsAbrir(feed);
+    if (resultado != TODO_OK) {
+        return resultado;
+    }
+
+    tNodo *actual = feed->inicio;
+    while (actual != NULL) {
+        if (indiceCargar(indice, actual, ((Tweet *)actual->data)->mensaje) == INDICE_ERROR) {
+            return INDICE_ERROR;
+        }
+        actual = actual->sig;
+    }
+    return TODO_OK;
+}
+
+int tweetPublicarConIndice(tLista *feed, tIndice *indice, User *autor, char *mensaje) {
+    // Publica con la funcion original (incluye el reporte a FameCheck) y despues indexa el tweet nuevo
+    int resultado = tweetPublicar(feed, autor, mensaje);
+    if (resultado != TODO_OK) {
+        return resultado;
+    }
+
+    // listaInsertarOrdenado no devuelve el nodo: lo busco por id (el tweet nuevo tiene el ultimo id)
+    unsigned int id = ultimo_id;
+    tNodo *nodo = listaBuscarYDevolver(feed, &id, cmpTweetId);
+    if (nodo == NULL) {
+        return NODO_NO_ENCONTRADO;
+    }
+
+    if (indiceCargar(indice, nodo, ((Tweet *)nodo->data)->mensaje) == INDICE_ERROR) {
+        return INDICE_ERROR;
+    }
+    return TODO_OK;
+}
+
+int tweetModificarConIndice(tLista *feed, tIndice *indice, unsigned int id, char *nuevoMensaje, char *autor) {
+
+    tNodo *nodo = listaBuscarYDevolver(feed, &id, cmpTweetId);
+
+    if (nodo == NULL)
+        return NODO_NO_ENCONTRADO;
+
+    Tweet *t = (Tweet *)nodo->data;
+
+    if (strcmp(t->autor, autor) != 0)
+        return SIN_PERMISO;
+
+    // Se quita del indice con el mensaje viejo antes de cambiarlo, y se vuelve a cargar con el nuevo
+    indiceQuitar(indice, nodo, t->mensaje);
+
+    strncpy(t->mensaje, nuevoMensaje, MAX_TWEET);
+    t->mensaje[MAX_TWEET] = '\0';
+
+    if (indiceCargar(indice, nodo, t->mensaje) == INDICE_ERROR)
+        return INDICE_ERROR;
+
+    return TODO_OK;
+}
+
+int tweetEliminarConIndice(tLista *feed, tIndice *indice, unsigned int id, char *autor) {
+
+    tNodo *nodo = listaBuscarYDevolver(feed, &id, cmpTweetId);
+
+    if (nodo == NULL)
+        return NODO_NO_ENCONTRADO;
+
+    Tweet *t = (Tweet *)nodo->data;
+
+    if (strcmp(t->autor, autor) != 0)
+        return SIN_PERMISO;
+
+    // Primero se saca del indice: despues de listaEliminarNodo el nodo ya esta liberado
+    indiceQuitar(indice, nodo, t->mensaje);
+
+    return listaEliminarNodo(feed, &id, cmpTweetId);
+}
+
+void tweetBuscarYMostrarConIndice(tIndice *indice, char *textoBuscado) {
+
+    printf("\n--- RESULTADOS DE BUSQUEDA: '%s' ---\n", textoBuscado);
+
+    // El indice guarda palabras sueltas: se busca la primera palabra de lo ingresado
+    char copia[MAX_PALABRA];
+    strncpy(copia, textoBuscado, MAX_PALABRA - 1);
+    copia[MAX_PALABRA - 1] = '\0';
+    char *palabra = strtok(copia, SEPARADORES);
+
+    tLista *resultados = (palabra != NULL) ? indiceBuscar(indice, palabra) : NULL;
+
+    if (resultados == NULL) {
+        printf("No se encontraron tweets que contengan esa palabra.\n");
+        return;
+    }
+
+    // Cada elemento de la lista es un tNodo* que apunta al nodo del tweet en el feed
+    tNodo *actual = resultados->inicio;
+    while (actual != NULL) {
+        tNodo *nodoTweet = *(tNodo **)actual->data;
+        tweetImprimir(nodoTweet->data);
+        actual = actual->sig;
     }
 }

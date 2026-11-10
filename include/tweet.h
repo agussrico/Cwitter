@@ -8,6 +8,7 @@
 #include "famecheck.h"
 #include "lista.h"
 #include "user.h"
+#include "indice.h"
 
 #define MAX_TWEET 140
 #define ARCH_TWEETS "tweets.bin"
@@ -33,5 +34,12 @@ void tweetImprimir(void *tweet);
 int cmpTweetId(void *a, void *b);
 int cmpTweetTexto(void *a, void *b);
 int cmpTweetFeed(void *a, void *b);
+
+// Versiones con indice: hacen lo mismo que las originales y mantienen actualizado el indice de busqueda
+int tweetsAbrirConIndice(tLista *feed, tIndice *indice);
+int tweetPublicarConIndice(tLista *feed, tIndice *indice, User *autor, char *mensaje);
+int tweetModificarConIndice(tLista *feed, tIndice *indice, unsigned int id, char *nuevoMensaje, char *autor);
+int tweetEliminarConIndice(tLista *feed, tIndice *indice, unsigned int id, char *autor);
+void tweetBuscarYMostrarConIndice(tIndice *indice, char *textoBuscado);
 
 #endif // TWEET_H_INCLUDED

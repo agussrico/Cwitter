@@ -18,6 +18,7 @@
 #define ANCHO_PANTALLA  76
 
 int usarLinux = 0;
+int modoTest = 0; // muestra la cantidad de comparaciones de cada busqueda
 
 void leerConfig()
 {
@@ -188,6 +189,8 @@ void mostrarBarraOpciones()
     mostrarOpcion("6", "Top Verificados");
     mostrarOpcion("7", "Cerrar Sesion");
     printf("\n");
+    mostrarOpcion("T", modoTest ? "Modo Test: ON" : "Modo Test: OFF");
+    printf("\n");
     dibujarSeparador('-', ANCHO_PANTALLA);
 }
 
@@ -240,8 +243,10 @@ int main()
     tLista listaTweets;
     tNodo *nodoTweet = NULL;
     int posTweet = 0;
+    tIndice indiceTweets; ///indice de busqueda por palabra
     listaInicializar(&listaTweets);
-    tweetsAbrir(&listaTweets);
+    indiceInicializar(&indiceTweets);
+    tweetsAbrirConIndice(&listaTweets, &indiceTweets);
 
     ///usuarios
     int opcion;
@@ -294,6 +299,7 @@ int main()
                 usersGuardar(&listaUsuarios);
                 tweetsGuardar(&listaTweets);
                 listaVaciar(&listaUsuarios);
+                indiceVaciar(&indiceTweets);
                 listaVaciar(&listaTweets);
                 famecheckFinalizar();
 
@@ -366,7 +372,7 @@ int main()
                     fgets(bufferMensaje, sizeof(bufferMensaje), stdin);
                     bufferMensaje[strcspn(bufferMensaje, "\n")] = 0; // Saca el enter final
 
-                    tweetPublicar(&listaTweets, pUsuarioActual, bufferMensaje);
+                    tweetPublicarConIndice(&listaTweets, &indiceTweets, pUsuarioActual, bufferMensaje);
                     mostrarMensaje(VERDE, "\n  [!] Tweet publicado con exito.\n");
                     nodoTweet = listaTweets.inicio;
                     posTweet = (nodoTweet != NULL) ? 1 : 0;
@@ -378,7 +384,13 @@ int main()
                     fgets(bufferMensaje, sizeof(bufferMensaje), stdin);
                     bufferMensaje[strcspn(bufferMensaje, "\n")] = 0;
 
-                    tweetBuscarYMostrar(&listaTweets, bufferMensaje);
+                    tweetBuscarYMostrarConIndice(&indiceTweets, bufferMensaje);
+
+                    if (modoTest) {
+                        printf("\n  [TEST] Comparaciones con indice: %lu (palabras en el arbol: %d, altura: %d)\n",
+                               indiceComparacionesUltimaBusqueda(), indiceTweets.arbol.cant, arbolAltura(&indiceTweets.arbol));
+                        printf("  [TEST] Comparaciones sin indice: %d (un strstr por cada tweet del feed)\n", listaTweets.cant);
+                    }
                     break;
 
                 case '4':
@@ -390,7 +402,7 @@ int main()
                     fgets(bufferMensaje, sizeof(bufferMensaje), stdin);
                     bufferMensaje[strcspn(bufferMensaje, "\n")] = 0;
 
-                    resultado = tweetModificar(&listaTweets, idTemp, bufferMensaje, pUsuarioActual->user);
+                    resultado = tweetModificarConIndice(&listaTweets, &indiceTweets, idTemp, bufferMensaje, pUsuarioActual->user);
 
                     if (resultado == TODO_OK)
                         mostrarMensaje(VERDE, "\n  [!] Tweet modificado.\n");
@@ -405,7 +417,7 @@ int main()
                     scanf("%u", &idTemp);
                     while ((getchar()) != '\n');
 
-                    resultado = tweetEliminar(&listaTweets, idTemp, pUsuarioActual->user);
+                    resultado = tweetEliminarConIndice(&listaTweets, &indiceTweets, idTemp, pUsuarioActual->user);
 
                     if (resultado == TODO_OK)
                         mostrarMensaje(VERDE, "\n  [!] Tweet eliminado.\n");
@@ -429,6 +441,12 @@ int main()
                     else
                         listaRecorrerYAccion(&listaFamecheckTop, famecheckMostrarUsuarioTop);
                     listaVaciar(&listaFamecheckTop);
+                    break;
+
+                case 't':
+                case 'T':
+                    modoTest = !modoTest;
+                    mostrarMensaje(AMARILLO, modoTest ? "\n  [!] Modo test activado.\n" : "\n  [!] Modo test desactivado.\n");
                     break;
 
                 case '7':
@@ -464,6 +482,7 @@ int main()
     tweetsGuardar(&listaTweets); // Persistencia del feed
     ///vacio la lista
     listaVaciar(&listaUsuarios);
+    indiceVaciar(&indiceTweets);
     listaVaciar(&listaTweets);
     famecheckFinalizar();
     return 0;
