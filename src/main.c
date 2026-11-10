@@ -18,7 +18,6 @@
 #define ANCHO_PANTALLA  76
 
 int usarLinux = 0;
-int modoTest = 0; // muestra la cantidad de comparaciones de cada busqueda
 
 void leerConfig()
 {
@@ -191,8 +190,6 @@ void mostrarBarraOpciones()
     printf("\n");
     mostrarOpcion("6", "Top Verificados");
     mostrarOpcion("7", "Cerrar Sesion");
-    printf("\n");
-    mostrarOpcion("T", modoTest ? "Modo Test: ON" : "Modo Test: OFF");
     printf("\n");
     dibujarSeparador('-', ANCHO_PANTALLA);
 }
@@ -503,12 +500,6 @@ int main()
                     bufferMensaje[strcspn(bufferMensaje, "\n")] = 0;
 
                     tweetBuscarYMostrarConIndice(&indiceTweets, bufferMensaje);
-
-                    if (modoTest) {
-                        printf("\n  [TEST] Comparaciones con indice: %lu (palabras en el arbol: %d, altura: %d)\n",
-                               indiceComparacionesUltimaBusqueda(), indiceTweets.arbol.cant, arbolAltura(&indiceTweets.arbol));
-                        printf("  [TEST] Comparaciones sin indice: %d (un strstr por cada tweet y respuesta)\n", indiceTweets.cantRegistros);
-                    }
                     break;
 
                 case '4':
@@ -559,12 +550,6 @@ int main()
                     else
                         listaRecorrerYAccion(&listaFamecheckTop, famecheckMostrarUsuarioTop);
                     listaVaciar(&listaFamecheckTop);
-                    break;
-
-                case 't':
-                case 'T':
-                    modoTest = !modoTest;
-                    mostrarMensaje(AMARILLO, modoTest ? "\n  [!] Modo test activado.\n" : "\n  [!] Modo test desactivado.\n");
                     break;
 
                 case '7':

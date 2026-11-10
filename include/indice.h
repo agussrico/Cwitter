@@ -22,6 +22,5 @@ int indiceCargar(tIndice *indice, tNodo *nodo, const char *texto);
 int indiceQuitar(tIndice *indice, tNodo *nodo, const char *texto);
 tLista *indiceBuscar(tIndice *indice, const char *palabra);
 void indiceVaciar(tIndice *indice);
-unsigned long indiceComparacionesUltimaBusqueda(void);
 
 #endif // INDICE_H_INCLUDED

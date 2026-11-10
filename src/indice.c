@@ -10,9 +10,6 @@ static void desindexarPalabra(tIndice *indice, const char *palabra, tNodo *nodo)
 static int cmpNodo(void *busqueda, void *data);
 static char *copiarTexto(const char *texto);
 
-///contador de comparaciones de palabras, para el modo test (se reinicia en cada indiceBuscar)
-static unsigned long comparaciones = 0;
-
 void indiceInicializar(tIndice *indice){
     arbolInicializar(&indice->arbol);
     indice->cantRegistros = 0;
@@ -74,17 +71,11 @@ tLista *indiceBuscar(tIndice *indice, const char *palabra){
     tEntradaIndice *entrada;
 
     normalizar(clave.palabra, palabra);
-    comparaciones = 0;
     entrada = (tEntradaIndice *)arbolBuscar(&indice->arbol, &clave, cmpEntrada);
     if(entrada == NULL){
         return NULL;
     }
     return &entrada->nodos;
-}
-
-unsigned long indiceComparacionesUltimaBusqueda(void){
-    ///cantidad de palabras que comparo la ultima llamada a indiceBuscar
-    return comparaciones;
 }
 
 void indiceVaciar(tIndice *indice){
@@ -151,7 +142,6 @@ static char *copiarTexto(const char *texto){
 }
 
 static int cmpEntrada(void *a, void *b){
-    comparaciones++;
     return strcmp(((tEntradaIndice *)a)->palabra, ((tEntradaIndice *)b)->palabra);
 }
 
