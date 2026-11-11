@@ -106,6 +106,8 @@ int tweetPublicar(tLista *feed, User *autor, char *mensaje, unsigned int idPadre
         return listaInsertarOrdenado(feed,&nuevoTweet,sizeof(Tweet),cmpTweetFeed);
 
     Tweet *padre = tweetBuscarPorId(feed,idPadre);
+    if(padre == NULL)
+        return NODO_NO_ENCONTRADO;
     return listaInsertarOrdenado(&padre->hilo, &nuevoTweet, sizeof(Tweet),cmpTweetFeed);    
 }
 
