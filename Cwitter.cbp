@@ -37,15 +37,23 @@
 			<Add library="curl" />
 			<Add directory="C:/libs/curl/lib" />
 		</Linker>
+		<Unit filename="include/arbol.h" />
 		<Unit filename="include/cJSON.h" />
 		<Unit filename="include/famecheck.h" />
+		<Unit filename="include/indice.h" />
 		<Unit filename="include/lista.h" />
 		<Unit filename="include/tweet.h" />
 		<Unit filename="include/user.h" />
+		<Unit filename="src/arbol.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="src/cJSON.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/famecheck.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/indice.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/lista.c">

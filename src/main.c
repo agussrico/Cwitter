@@ -178,13 +178,16 @@ void mostrarBarraOpciones()
     dibujarSeparador('-', ANCHO_PANTALLA);
     mostrarOpcion("A", "Tweet Anterior");
     mostrarOpcion("D", "Tweet Siguiente");
+    mostrarOpcion("R", "Responder Tweet");
+    printf("\n");
     mostrarOpcion("1", "Ver Feed");
-    printf("\n");
-    mostrarOpcion("2", "Publicar un Tweet");
+    mostrarOpcion("2", "Publicar Tweet");
     mostrarOpcion("3", "Buscar un Tweet");
-    mostrarOpcion("4", "Modificar un Tweet");
     printf("\n");
-    mostrarOpcion("5", "Eliminar un Tweet");
+    mostrarOpcion("V", "Ver Hilo Actual");
+    mostrarOpcion("4", "Modificar Tweet");
+    mostrarOpcion("5", "Eliminar Tweet");
+    printf("\n");
     mostrarOpcion("6", "Top Verificados");
     mostrarOpcion("7", "Cerrar Sesion");
     printf("\n");
@@ -223,6 +226,42 @@ void mostrarTweetActual(tNodo *nodo, int posicion, int total)
     printf("\n");
 }
 
+void tweetImprimirHiloRecursivo(tLista *hilo, int nivel)
+{
+    tNodo *actual = hilo->inicio;
+    while (actual != NULL)
+    {
+        Tweet *t = (Tweet *)actual->data;
+
+        for(int i = 0; i < nivel; i++)
+        {
+            printf("    ");
+        }
+        printf("|-- ");
+
+        struct tm *tm_info = localtime(&t->fecha);
+        char fechaStr[20];
+        strftime(fechaStr, sizeof(fechaStr), "%d/%m/%Y %H:%M:%S", tm_info);
+
+        printf("[ID: %u] [%s] @%s", t->id, fechaStr, t->autor);
+        if (t->verificado == 1) printf(" [V]");
+        printf(" respondio:\n");
+
+        for(int i = 0; i < nivel; i++)
+        {
+            printf("    ");
+        }
+        printf("    %s\n", t->mensaje);
+
+        if (!listaVacia(&t->hilo))
+        {
+            tweetImprimirHiloRecursivo(&t->hilo, nivel + 1);
+        }
+
+        actual = actual->sig;
+    }
+}
+
 int main()
 {
     User *pUsuarioActual = NULL;
@@ -240,11 +279,14 @@ int main()
     tLista listaTweets;
     tNodo *nodoTweet = NULL;
     int posTweet = 0;
+    tIndice indiceTweets; ///indice de busqueda por palabra
     listaInicializar(&listaTweets);
-    tweetsAbrir(&listaTweets);
+    indiceInicializar(&indiceTweets);
+    tweetsAbrirConIndice(&listaTweets, &indiceTweets);
 
     ///usuarios
     int opcion;
+    int resultadoRegistro;
     char user[20], pass[20];
     tLista listaUsuarios;
     listaInicializar(&listaUsuarios);
@@ -284,8 +326,13 @@ int main()
                 scanf("%19s", user);
                 mostrarPrompt("  Password: ");
                 scanf("%19s", pass);
-                userRegistrar(&listaUsuarios, user, pass);
-                ///faltaria control de errores usuario duplicado/no se pudo cargar.
+                resultadoRegistro = userRegistrar(&listaUsuarios, user, pass);
+                if(resultadoRegistro == TODO_OK)
+                    mostrarMensaje(VERDE, "\n  [!] Usuario registrado con exito.\n");
+                else if(resultadoRegistro == USER_DUPLICADO)
+                    mostrarMensaje(ROJO, "\n  [!] Ese usuario ya existe, elegi otro nombre.\n");
+                else
+                    mostrarMensaje(ROJO, "\n  [!] No se pudo registrar el usuario (sin memoria).\n");
                 printf("\n  Presione ENTER para continuar...");
                 getchar(); getchar();
             }
@@ -294,6 +341,7 @@ int main()
                 usersGuardar(&listaUsuarios);
                 tweetsGuardar(&listaTweets);
                 listaVaciar(&listaUsuarios);
+                indiceVaciar(&indiceTweets);
                 listaVaciar(&listaTweets);
                 famecheckFinalizar();
 
@@ -335,7 +383,7 @@ int main()
             // Limpiamos el buffer de entrada (CRÍTICO antes de leer strings con fgets)
             while ((getchar()) != '\n');
 
-            char bufferMensaje[300]; // Buffer temporal grande
+            char bufferMensaje[350]; // Buffer temporal grande
             unsigned int idTemp;
             int resultado;
 
@@ -366,11 +414,84 @@ int main()
                     fgets(bufferMensaje, sizeof(bufferMensaje), stdin);
                     bufferMensaje[strcspn(bufferMensaje, "\n")] = 0; // Saca el enter final
 
-                    tweetPublicar(&listaTweets, pUsuarioActual, bufferMensaje);
+                    tweetPublicarConIndice(&listaTweets, &indiceTweets, pUsuarioActual, bufferMensaje, 0); // 0 = Sin padre
                     mostrarMensaje(VERDE, "\n  [!] Tweet publicado con exito.\n");
                     nodoTweet = listaTweets.inicio;
                     posTweet = (nodoTweet != NULL) ? 1 : 0;
+                    break;
 
+                case 'r':
+                case 'R': // Responde a tweet o respuesta por su ID
+                    unsigned int idResponder;
+                    printf("\n  Ingresa el ID del tweet (o respuesta) al que queres responder: ");
+                    scanf("%u", &idResponder);
+                    while ((getchar()) != '\n');
+
+                    Tweet *tweetDestino = tweetBuscarPorId(&listaTweets, idResponder);
+                    if (tweetDestino == NULL)
+                    {
+                        mostrarMensaje(ROJO, "\n  [!] No se encontro un tweet con ese ID.\n");
+                        break;
+                    }
+
+                    printf("  Escribi tu respuesta (max %d caracteres):\n  > ", MAX_TWEET);
+                    fgets(bufferMensaje, sizeof(bufferMensaje), stdin);
+                    bufferMensaje[strcspn(bufferMensaje, "\n")] = 0;
+
+                    if (tweetPublicarConIndice(&listaTweets, &indiceTweets, pUsuarioActual, bufferMensaje, tweetDestino->id) == TODO_OK)
+                        mostrarMensaje(VERDE, "\n  [!] Respuesta publicada con exito en el hilo.\n");
+                    else
+                        mostrarMensaje(ROJO, "\n  [!] No se pudo publicar la respuesta.\n");
+                    break;
+
+                case 'v':
+                case 'V': // Ver hilo completo
+                    if (nodoTweet == NULL)
+                    {
+                        mostrarMensaje(ROJO, "\n  [!] No hay tweets para mostrar.\n");
+                        break;
+                    }
+                    limpiarPantalla();
+                    Tweet *tSel = (Tweet *)nodoTweet->data;
+                    printf("\n========= HILO DE CONVERSACION (ID: %u) =========\n", tSel->id);
+                    tweetImprimir(tSel);
+                    if (!listaVacia(&tSel->hilo))
+                    {
+                        printf("\n  --- Respuestas ---\n");
+                        tweetImprimirHiloRecursivo(&tSel->hilo, 1); // Imprime las respuestas con sangria
+                    } else {
+                        printf("\n  (Este tweet todavia no tiene respuestas)\n");
+                    }
+                    printf("===================================================\n");
+
+                    /// Opcion de responder directamente
+                    printf("\n  Queres responder a este tweet? (S/N): ");
+                    char respuestaOpc;
+                    scanf(" %c", &respuestaOpc);
+                    while ((getchar()) != '\n');
+                    if (respuestaOpc == 's' || respuestaOpc == 'S')
+                    {
+                        unsigned int idDestino = tSel->id;
+
+                        printf("\n  (Si queres responder a una respuesta interna, ingresa su ID. Si queres responder al principal, presiona 0): ");
+                        unsigned int idIngresado;
+                        scanf("%u", &idIngresado);
+                        while ((getchar()) != '\n');
+
+                        if (idIngresado != 0)
+                        {
+                            idDestino = idIngresado;
+                        }
+
+                        printf("  Escribi tu respuesta (max %d caracteres):\n  > ", MAX_TWEET);
+                        fgets(bufferMensaje, sizeof(bufferMensaje), stdin);
+                        bufferMensaje[strcspn(bufferMensaje, "\n")] = 0;
+
+                        if (tweetPublicarConIndice(&listaTweets, &indiceTweets, pUsuarioActual, bufferMensaje, idDestino) == TODO_OK)
+                            mostrarMensaje(VERDE, "\n  [!] Respuesta publicada con exito en el hilo.\n");
+                        else
+                            mostrarMensaje(ROJO, "\n  [!] No se encontro un tweet con ese ID.\n");
+                    }
                     break;
 
                 case '3':
@@ -378,7 +499,7 @@ int main()
                     fgets(bufferMensaje, sizeof(bufferMensaje), stdin);
                     bufferMensaje[strcspn(bufferMensaje, "\n")] = 0;
 
-                    tweetBuscarYMostrar(&listaTweets, bufferMensaje);
+                    tweetBuscarYMostrarConIndice(&indiceTweets, bufferMensaje);
                     break;
 
                 case '4':
@@ -390,7 +511,7 @@ int main()
                     fgets(bufferMensaje, sizeof(bufferMensaje), stdin);
                     bufferMensaje[strcspn(bufferMensaje, "\n")] = 0;
 
-                    resultado = tweetModificar(&listaTweets, idTemp, bufferMensaje, pUsuarioActual->user);
+                    resultado = tweetModificarConIndice(&listaTweets, &indiceTweets, idTemp, bufferMensaje, pUsuarioActual->user);
 
                     if (resultado == TODO_OK)
                         mostrarMensaje(VERDE, "\n  [!] Tweet modificado.\n");
@@ -405,7 +526,7 @@ int main()
                     scanf("%u", &idTemp);
                     while ((getchar()) != '\n');
 
-                    resultado = tweetEliminar(&listaTweets, idTemp, pUsuarioActual->user);
+                    resultado = tweetEliminarConIndice(&listaTweets, &indiceTweets, idTemp, pUsuarioActual->user);
 
                     if (resultado == TODO_OK)
                         mostrarMensaje(VERDE, "\n  [!] Tweet eliminado.\n");
@@ -464,6 +585,7 @@ int main()
     tweetsGuardar(&listaTweets); // Persistencia del feed
     ///vacio la lista
     listaVaciar(&listaUsuarios);
+    indiceVaciar(&indiceTweets);
     listaVaciar(&listaTweets);
     famecheckFinalizar();
     return 0;

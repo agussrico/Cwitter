@@ -2,8 +2,10 @@
 #include "user.h"
 #include "tweet.h"
 #include "famecheck.h"
+#include "indice.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 User crearUser(char *nombre, int verificado)
 {
@@ -21,6 +23,8 @@ void mostrarId(void *dato)
 
 int main()
 {
+    remove(ARCH_TWEETS); // Asegura arrancar desde plataforma vacia en la prueba
+
     tLista feed;
     listaInicializar(&feed);
 
@@ -39,12 +43,12 @@ int main()
         printf("Feed cargado desde archivo. Tweets actuales: %d\n", feed.cant);
 
     printf("\n=== 2. Setup: Publicacion de tweets ===\n");
-    tweetPublicar(&feed, &ana, "Primer tweet de la plataforma"); //ID 1
-    tweetPublicar(&feed, &beto, "Segundo tweet para probar permisos"); //ID 2
-    tweetPublicar(&feed, &pepito, "Hola, soy una cuenta verificada"); //ID 3
-    tweetPublicar(&feed, &ana, "Tweet intermedio que va a ser borrado"); //ID 4
-    tweetPublicar(&feed, &carlos, "Carlos se suma a la prueba"); //ID 5
-    tweetPublicar(&feed, &pepito, "Segundo tweet verificado"); //ID 6
+    tweetPublicar(&feed, &ana, "Primer tweet de la plataforma", 0); //ID 1
+    tweetPublicar(&feed, &beto, "Segundo tweet para probar permisos", 0); //ID 2
+    tweetPublicar(&feed, &pepito, "Hola, soy una cuenta verificada", 0); //ID 3
+    tweetPublicar(&feed, &ana, "Tweet intermedio que va a ser borrado", 0); //ID 4
+    tweetPublicar(&feed, &carlos, "Carlos se suma a la prueba", 0); //ID 5
+    tweetPublicar(&feed, &pepito, "Segundo tweet verificado", 0); //ID 6
 
     printf("\n=== 3. Prueba: Feed con verificados y no verificados ===\n");
     printf("Esperado: 6 3 5 4 2 1 (verificados primero, despues el mas reciente primero)\n");
@@ -57,9 +61,11 @@ int main()
     Tweet viejo;
     memset(&viejo, 0, sizeof(Tweet));
     viejo.id = 99;
+    viejo.idPadre = 0;
     strcpy(viejo.autor, "beto");
     strcpy(viejo.mensaje, "Tweet de hace una hora");
     viejo.fecha = time(NULL) - 3600;
+    listaInicializar(&viejo.hilo);
     listaInsertarOrdenado(&feed, &viejo, sizeof(Tweet), cmpTweetFeed);
     printf("Esperado: 6 3 5 4 2 1 99\n");
     printf("Obtenido: ");
@@ -109,20 +115,116 @@ int main()
 
     printf("\n=== 9. Prueba: Persistencia ===\n");
     tweetsGuardar(&feed);
-    listaVaciar(&feed);
+    tweetVaciarHilo(&feed);
     printf("Memoria vaciada (simulando cierre). Tweets actuales en RAM: %d\n", feed.cant);
 
     printf("\n=== Volviendo a cargar para confirmar conservacion y orden ===\n");
     tLista feedVerificacion;
+    tIndice indice;
     listaInicializar(&feedVerificacion);
-    tweetsAbrir(&feedVerificacion);
+    indiceInicializar(&indice);
+    tweetsAbrirConIndice(&feedVerificacion, &indice);
 
     printf("Esperado: 3 5 2\n");
     printf("Obtenido: ");
     listaRecorrerYAccion(&feedVerificacion, mostrarId);
     printf("\n");
-    tweetsMostrarFeed(&feedVerificacion);
-    listaVaciar(&feedVerificacion);
+
+    // =========================================================================
+    // PRUEBAS SPRINT 3: 280 CARACTERES, HILOS MULTINIVEL E INDICE SOBRE ABB
+    // =========================================================================
+    printf("\n===================================================================\n");
+    printf("             PRUEBAS SPRINT 3 (HILOS, 280 CHARS E INDICE)\n");
+    printf("===================================================================\n");
+
+    printf("\n=== 10. Sprint 3 - Caso 1: Tweet de 280 caracteres y truncado de >280 ===\n");
+    char textoLargo[330];
+    memset(textoLargo, 'A', 320);
+    textoLargo[320] = '\0';
+    tweetPublicarConIndice(&feedVerificacion, &indice, &ana, textoLargo, 0); // ID 7
+    Tweet *tLargo = tweetBuscarPorId(&feedVerificacion, 7);
+    printf("Largo enviado: 320 | Largo guardado: %d (Esperado: %d)\n",
+           tLargo ? (int)strlen(tLargo->mensaje) : -1, MAX_TWEET);
+
+    printf("\n=== 11. Sprint 3 - Caso 2: Hilos multinivel (respuesta a respuesta sin limite) ===\n");
+    // Respondemos al tweet raiz ID 3 (de pepito123):
+    tweetPublicarConIndice(&feedVerificacion, &indice, &ana, "Respuesta nivel 1 de Ana al tweet 3", 3);       // ID 8 (padre 3)
+    tweetPublicarConIndice(&feedVerificacion, &indice, &beto, "Respuesta nivel 2 de Beto a Ana", 8);          // ID 9 (padre 8)
+    tweetPublicarConIndice(&feedVerificacion, &indice, &carlos, "Respuesta nivel 3 profunda de Carlos", 9);   // ID 10 (padre 9)
+    tweetPublicarConIndice(&feedVerificacion, &indice, &carlos, "Segunda respuesta nivel 1 al tweet 3", 3);   // ID 11 (padre 3)
+
+    Tweet *t3 = tweetBuscarPorId(&feedVerificacion, 3);
+    Tweet *t8 = tweetBuscarPorId(&feedVerificacion, 8);
+    Tweet *t9 = tweetBuscarPorId(&feedVerificacion, 9);
+    Tweet *t10 = tweetBuscarPorId(&feedVerificacion, 10);
+    printf("Hijos directos de Tweet #3: %d (Esperado: 2 -> IDs 8 y 11)\n", t3->hilo.cant);
+    printf("Nivel 1 (ID 8) idPadre=%u, respuestas=%d\n", t8->idPadre, t8->hilo.cant);
+    printf("Nivel 2 (ID 9) idPadre=%u, respuestas=%d\n", t9->idPadre, t9->hilo.cant);
+    printf("Nivel 3 (ID 10) idPadre=%u, respuestas=%d\n", t10->idPadre, t10->hilo.cant);
+
+    printf("\n=== 12. Sprint 3 - Caso 3: Responder a un ID inexistente ===\n");
+    int rInexistente = tweetPublicarConIndice(&feedVerificacion, &indice, &ana, "Respuesta a fantasma", 9999);
+    printf("Resultado de responder al ID 9999: %d (Esperado: %d = NODO_NO_ENCONTRADO)\n",
+           rInexistente, NODO_NO_ENCONTRADO);
+
+    printf("\n=== 13. Sprint 3 - Caso 4: Busqueda con Indice ABB en hilos y mayusculas/minusculas ===\n");
+    printf("> Buscando 'PROFUNDA' en el indice (debe encontrar la respuesta ID 10 de nivel 3):\n");
+    tweetBuscarYMostrarConIndice(&indice, "PROFUNDA");
+
+    printf("\n=== 14. Sprint 3 - Caso 5: Permisos y actualizacion del Indice al modificar respuesta en hilo ===\n");
+    int rSinPermiso = tweetModificarConIndice(&feedVerificacion, &indice, 9, "Intento hackear respuesta", "carlos");
+    printf("Carlos intenta modificar respuesta de Beto (ID 9): %d (Esperado: %d = SIN_PERMISO)\n",
+           rSinPermiso, SIN_PERMISO);
+
+    int rModOk = tweetModificarConIndice(&feedVerificacion, &indice, 9, "Respuesta nivel 2 editada con palabra clave relampago", "beto");
+    printf("Beto modifica su respuesta (ID 9): %d (Esperado: 0 = TODO_OK)\n", rModOk);
+    printf("> Buscando palabra nueva 'relampago' en el indice:\n");
+    tweetBuscarYMostrarConIndice(&indice, "relampago");
+
+    printf("\n=== 15. Sprint 3 - Caso 6: Eliminacion en cascada de un sub-hilo y limpieza del indice ===\n");
+    // Si Ana borra su respuesta ID 8 (Nivel 1), deben desaparecer tambien el ID 9 (Nivel 2) y el ID 10 (Nivel 3),
+    // pero debe seguir existiendo el ID 11 (la otra respuesta de Nivel 1 al tweet 3).
+    int rBorradoHilo = tweetEliminarConIndice(&feedVerificacion, &indice, 8, "ana");
+    printf("Ana elimina su respuesta ID 8 (con hijos 9 y 10): %d (Esperado: 0 = TODO_OK)\n", rBorradoHilo);
+    printf("Respuestas que quedaron en Tweet #3: %d (Esperado: 1 -> solo ID 11)\n", t3->hilo.cant);
+    printf("Buscar ID 8: %s | Buscar ID 9: %s | Buscar ID 10: %s | Buscar ID 11: %s\n",
+           tweetBuscarPorId(&feedVerificacion, 8) ? "EXISTE" : "NULL",
+           tweetBuscarPorId(&feedVerificacion, 9) ? "EXISTE" : "NULL",
+           tweetBuscarPorId(&feedVerificacion, 10) ? "EXISTE" : "NULL",
+           tweetBuscarPorId(&feedVerificacion, 11) ? "EXISTE" : "NULL");
+    printf("> Buscando 'profunda' (del nieto eliminado ID 10) en el indice:\n");
+    tweetBuscarYMostrarConIndice(&indice, "profunda");
+
+    printf("\n=== 16. Sprint 3 - Caso 7: Persistencia de hilos en tweets.bin y recarga completa ===\n");
+    // Agregamos una respuesta al ID 11 (Nivel 2) antes de guardar para persistir 2 niveles activos
+    tweetPublicarConIndice(&feedVerificacion, &indice, &beto, "Respuesta persistente en segundo nivel", 11); // ID 12 (padre 11)
+    tweetsGuardar(&feedVerificacion);
+    indiceVaciar(&indice);
+    tweetVaciarHilo(&feedVerificacion);
+    printf("Guardado y vaciado en RAM. Feed cant: %d, Arbol cant: %d\n",
+           feedVerificacion.cant, indice.arbol.cant);
+
+    tLista feedRecargado;
+    tIndice indiceRecargado;
+    listaInicializar(&feedRecargado);
+    indiceInicializar(&indiceRecargado);
+    tweetsAbrirConIndice(&feedRecargado, &indiceRecargado);
+
+    Tweet *t3Rec = tweetBuscarPorId(&feedRecargado, 3);
+    Tweet *t11Rec = tweetBuscarPorId(&feedRecargado, 11);
+    Tweet *t12Rec = tweetBuscarPorId(&feedRecargado, 12);
+    printf("Recargado desde archivo -> Tweet #3 respuestas: %d (Esperado: 1 -> ID 11)\n",
+           t3Rec ? t3Rec->hilo.cant : -1);
+    printf("Recargado desde archivo -> Respuesta #11 idPadre=%u, respuestas=%d (Esperado: padre 3, 1 hijo -> ID 12)\n",
+           t11Rec ? t11Rec->idPadre : 0, t11Rec ? t11Rec->hilo.cant : -1);
+    printf("Recargado desde archivo -> Sub-respuesta #12 idPadre=%u, mensaje='%s'\n",
+           t12Rec ? t12Rec->idPadre : 0, t12Rec ? t12Rec->mensaje : "NULL");
+    printf("> Buscando 'persistente' en el indice reconstruido:\n");
+    tweetBuscarYMostrarConIndice(&indiceRecargado, "persistente");
+
+    indiceVaciar(&indiceRecargado);
+    tweetVaciarHilo(&feedRecargado);
+    remove(ARCH_TWEETS);
 
     famecheckFinalizar();
     return 0;
